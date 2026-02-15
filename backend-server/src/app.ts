@@ -1,11 +1,11 @@
 import express from 'express';
 import 'reflect-metadata';
-import productRoutes from './modules/products/product.routes';
+import { registerRoutes } from './modules/route.index';
 
 const app = express();
 
 app.use(express.json());
 
-app.use('/products', productRoutes);
+registerRoutes(app);
 
 export default app;

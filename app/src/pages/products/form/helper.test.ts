@@ -23,6 +23,7 @@ describe("Product form helper", () => {
         inventory: 50,
         status: "ACTIVE",
         owner: { id: "o1", name: "John", email: "j@test.com" },
+        image: "YmFzZTY0",
       };
 
       const form = buildBaseForm(product);
@@ -33,6 +34,7 @@ describe("Product form helper", () => {
         inventory: "50",
         status: "ACTIVE",
         ownerId: "o1",
+        image: "YmFzZTY0",
       });
     });
 
@@ -60,6 +62,7 @@ describe("Product form helper", () => {
         inventory: "5",
         status: "ACTIVE",
         ownerId: "o1",
+        image: null,
       };
 
       expect(validateForm(form)).toEqual({});
@@ -71,6 +74,7 @@ describe("Product form helper", () => {
         sku: "SKU1",
         price: "10",
         ownerId: "o1",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -83,6 +87,7 @@ describe("Product form helper", () => {
         name: "Widget",
         price: "10",
         ownerId: "o1",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -97,6 +102,7 @@ describe("Product form helper", () => {
         inventory: "0",
         status: "ACTIVE",
         ownerId: "o1",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -111,6 +117,7 @@ describe("Product form helper", () => {
         inventory: "0",
         status: "ACTIVE",
         ownerId: "o1",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -125,6 +132,7 @@ describe("Product form helper", () => {
         inventory: "-5",
         status: "ACTIVE",
         ownerId: "o1",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -139,6 +147,7 @@ describe("Product form helper", () => {
         inventory: "0",
         status: "ACTIVE",
         ownerId: "",
+        image: null,
       };
 
       const errors = validateForm(form);
@@ -155,6 +164,7 @@ describe("Product form helper", () => {
         inventory: "50",
         status: "ACTIVE",
         ownerId: "o1",
+        image: null,
       };
 
       const payload = buildPayload(form);
@@ -166,6 +176,25 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
       });
+    });
+
+    it("includes image when requested", () => {
+      const form: FormState = {
+        name: "Widget",
+        sku: "WID-001",
+        price: "19.99",
+        inventory: "10",
+        status: "ACTIVE",
+        ownerId: "o1",
+        image: "YmFzZTY0",
+      };
+
+      const payload = buildPayload(form, {
+        includeImage: true,
+        imageValue: form.image,
+      });
+
+      expect(payload.image).toBe("YmFzZTY0");
     });
   });
 });

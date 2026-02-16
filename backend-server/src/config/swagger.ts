@@ -33,6 +33,17 @@ const options: swaggerJsdoc.Options = {
             price: { type: "number", format: "double", example: 29.99 },
             inventory: { type: "integer", example: 150 },
             status: { type: "string", enum: ["ACTIVE", "INACTIVE"], example: "ACTIVE" },
+            image: {
+              type: "string",
+              nullable: true,
+              description: "Base64 encoded image data",
+            },
+            imageMimeType: {
+              type: "string",
+              nullable: true,
+              description: "MIME type describing the stored image",
+              example: "image/png",
+            },
             owner: { $ref: "#/components/schemas/ProductOwner" },
           },
         },
@@ -63,6 +74,14 @@ const options: swaggerJsdoc.Options = {
             inventory: { type: "integer", minimum: 0, default: 0, example: 150 },
             status: { type: "string", enum: ["ACTIVE", "INACTIVE"], default: "ACTIVE", example: "ACTIVE" },
             ownerId: { type: "string", format: "uuid", example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+            image: {
+              type: "string",
+              description: "Base64 encoded image data (max 5MB)",
+            },
+            imageMimeType: {
+              type: "string",
+              description: "MIME type for the provided image (e.g. image/png)",
+            },
           },
         },
         UpdateProduct: {
@@ -74,6 +93,16 @@ const options: swaggerJsdoc.Options = {
             inventory: { type: "integer", minimum: 0, example: 150 },
             status: { type: "string", enum: ["ACTIVE", "INACTIVE"], example: "ACTIVE" },
             ownerId: { type: "string", format: "uuid", example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+            image: {
+              type: "string",
+              nullable: true,
+              description: "Base64 encoded image data. Send null to remove the existing image.",
+            },
+            imageMimeType: {
+              type: "string",
+              nullable: true,
+              description: "MIME type for the provided image. Send null alongside image=null to clear the stored value.",
+            },
           },
         },
         SuccessResponse: {

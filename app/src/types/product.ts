@@ -5,6 +5,8 @@ export interface Product {
   price: number;
   inventory: number;
   status: "ACTIVE" | "INACTIVE";
+  image?: string | null;
+  imageMimeType?: string | null;
   owner?: {
     id: string;
     name: string;
@@ -20,6 +22,8 @@ export interface CreateProductPayload {
   inventory?: number;
   status?: "ACTIVE" | "INACTIVE";
   ownerId: string;
+  image?: string | null;
+  imageMimeType?: string | null;
 }
 
 export interface UpdateProductPayload {
@@ -29,6 +33,8 @@ export interface UpdateProductPayload {
   inventory?: number;
   status?: "ACTIVE" | "INACTIVE";
   ownerId?: string | null;
+  image?: string | null;
+  imageMimeType?: string | null;
 }
 
 export interface ProductFilters {

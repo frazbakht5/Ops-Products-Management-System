@@ -2,10 +2,6 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
 
-// MUI popper/menus warn if anchorEl has no layout rects (JSDOM). Provide a mock.
-const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect;
-const originalGetClientRects = Element.prototype.getClientRects;
-
 Element.prototype.getBoundingClientRect = function getBoundingClientRect() {
   return {
     x: 0,

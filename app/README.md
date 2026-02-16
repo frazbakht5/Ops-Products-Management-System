@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# Ops Products Management – Web Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite front‑end for the Ops Products Management System. It delivers responsive dashboards, owner/product CRUD workflows, and real-time validation with global error handling.
 
-Currently, two official plugins are available:
+## Highlights
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Rich page set**: product listing + inline previews, product create/edit form (image upload + owner insights), product-owner list with debounced filters, owner form with related products, and About page.
+- **Light/Dark theme support**: `ThemeContext` + `useThemeMode()` hook wire up the MUI theme, allowing instant palette switching from the app bar.
+- **Advanced error surfacing**: shared helpers (`utils/getErrorMessage`, `notistack` snackbars, form validation helpers) turn API errors into friendly user feedback.
+- **Reusable UI kit**: generic `FormField`, `DataTable`, `FilterBar`, `ConfirmDialog`, etc. keep pages lean and consistent.
+- **Testing strategy**: Vitest + Testing Library cover helper logic (form builders, filters) with utilities under `src/test` and `src/pages/**/helper.test.ts`.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Create a `.env` (or `.env.local`) if you need to override Vite variables (e.g., `VITE_API_BASE_URL`).
+3. Start the dev server
+   ```bash
+   npm run dev
+   ```
+4. Run type check + production build
+   ```bash
+   npm run build
+   ```
+5. Execute unit tests
+   ```bash
+   npm test
+   ```
 
-## Expanding the ESLint configuration
+Default dev server runs at [http://localhost:5173](http://localhost:5173).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Folder Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+app/
+├─ src/
+│  ├─ App.tsx                    # Routes + layout shell
+│  ├─ main.tsx                   # Entry, ThemeProvider, React.StrictMode
+│  ├─ theme.ts                   # Shared palette + typography tokens
+│  ├─ components/
+│  │  ├─ common/                 # FormField, DataTable, FilterBar, etc.
+│  │  └─ layout/AppLayout.tsx    # Drawer, app bar, theme toggle, logo
+│  ├─ context/                   # ThemeContext definition/value helpers
+│  ├─ hooks/                     # useThemeMode, useDebounce, useUrlParams
+│  ├─ pages/
+│  │  ├─ products/
+│  │  │  ├─ list/                # ProductListPage + helper + tests
+│  │  │  └─ form/                # ProductFormPage + helper + tests
+│  │  ├─ product-owners/
+│  │  │  ├─ list/                # Owner list with search/filter + tests
+│  │  │  └─ form/                # Owner form + owner-product sidebar + tests
+│  │  └─ about/                  # AboutPage + snapshot test
+│  ├─ store/                     # RTK Query api slice + store hooks
+│  ├─ types/                     # Shared TS interfaces (Product, Owner, API)
+│  ├─ utils/                     # getErrorMessage, misc helpers
+│  └─ test/                      # Testing utilities (providers, renderers)
+├─ public/                       # Static assets
+├─ package.json                  # Scripts + dependencies
+└─ vite.config.ts                # Vite + React plugin configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Pages & Interactions
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **/products** – Data table with sorting, filters, inline thumbnails, and bulk actions.
+- **/products/new & /products/:id** – Two-column form (fields + image upload + owner insights) with optimistic toasts.
+- **/product-owners** – Debounced email filter, search by name, and row actions.
+- **/product-owners/new & /product-owners/:id** – Form on the left, owner-product list on the right with deep links into product edit pages.
+- **/about** – Static info + team/mission copy.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Testing
+
+- `npm test` runs Vitest suites (helper logic, hooks) via `vitest.config.ts`.
+- Helper-focused specs live next to the modules they cover (e.g., `src/pages/products/form/helper.test.ts`).
+- `src/test/test-utils.tsx` centralizes render helpers (ThemeProvider, Router, Redux).
+
+## Error Handling & UX
+
+- All RTK Query endpoints funnel errors through `utils/getErrorMessage` → `notistack` snackbars.
+- Forms run local validation helpers before hitting the API, showing field-level errors immediately.
+- Data tables show graceful empty states with actionable CTAs when no results are found.
+
+## Theming
+
+- `ThemeContext` + `ThemeProvider` swap between light/dark palettes.
+- App bar includes a gradient logotype and theme toggle button (sun/moon icons).
+- Component spacing + typography align with `theme.ts` tokens for consistency.
+
+Feel free to extend the scaffolding with additional dashboards or widgets—the reusable primitives in `components/common` and the data hooks in `store/api` make it easy to scale.

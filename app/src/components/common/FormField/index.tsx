@@ -57,6 +57,7 @@ export default function FormField(props: FormFieldProps) {
       placeholder={props.placeholder}
       multiline={props.multiline}
       rows={props.rows}
+      inputProps={props.inputProps}
       size="medium"
       margin="normal"
     />

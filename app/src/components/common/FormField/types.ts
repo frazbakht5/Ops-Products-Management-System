@@ -1,3 +1,5 @@
+import type { TextFieldProps } from "@mui/material/TextField";
+
 export interface SelectOption {
   label: string;
   value: string;
@@ -21,6 +23,7 @@ export interface TextFormFieldProps extends BaseFormFieldProps {
   placeholder?: string;
   multiline?: boolean;
   rows?: number;
+  inputProps?: TextFieldProps["inputProps"];
 }
 
 export interface SelectFormFieldProps extends BaseFormFieldProps {

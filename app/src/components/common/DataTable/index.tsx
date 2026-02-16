@@ -69,7 +69,7 @@ export default function DataTable<T extends object>({
                 return (
                   <TableCell
                     key={col.id}
-                    align="center"
+                    align={col.align ?? "left"}
                     style={{ minWidth: col.minWidth }}
                     sx={{
                       borderRight:
@@ -96,7 +96,7 @@ export default function DataTable<T extends object>({
 
               {hasActions && (
                 <TableCell
-                  align="center"
+                  align="right"
                   style={{ minWidth: 120 }}
                   sx={{
                     borderRight: undefined,
@@ -163,7 +163,7 @@ export default function DataTable<T extends object>({
                     }}
                   >
                     {columns.map((col) => (
-                      <TableCell key={col.id} align="center">
+                      <TableCell key={col.id} align={col.align ?? "left"}>
                         {col.render
                           ? col.render(row)
                           : String(
@@ -173,9 +173,9 @@ export default function DataTable<T extends object>({
                     ))}
 
                     {hasActions && (
-                      <TableCell align="center">
+                      <TableCell align="right">
                         <Box
-                          className="flex items-center justify-center gap-1"
+                          className="flex items-center justify-end gap-1"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {renderActions(row)}

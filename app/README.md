@@ -87,5 +87,3 @@ app/
 - `ThemeContext` + `ThemeProvider` swap between light/dark palettes.
 - App bar includes a gradient logotype and theme toggle button (sun/moon icons).
 - Component spacing + typography align with `theme.ts` tokens for consistency.
-
-Feel free to extend the scaffolding with additional dashboards or widgets—the reusable primitives in `components/common` and the data hooks in `store/api` make it easy to scale.

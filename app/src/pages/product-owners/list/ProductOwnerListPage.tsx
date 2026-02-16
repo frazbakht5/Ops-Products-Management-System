@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -13,6 +13,7 @@ import FilterBar from "../../../components/common/FilterBar";
 import DataTable from "../../../components/common/DataTable";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
 import { useUrlParams } from "../../../hooks/useUrlParams";
+import { useDebounce } from "../../../hooks/useDebounce";
 import {
   useGetProductOwnersQuery,
   useDeleteProductOwnerMutation,
@@ -34,6 +35,18 @@ export default function ProductOwnerListPage() {
   const [deleteTarget, setDeleteTarget] = useState<ProductOwner | null>(null);
   const [deleteOwner, { isLoading: isDeleting }] =
     useDeleteProductOwnerMutation();
+  const [emailFilter, setEmailFilter] = useState(params.email);
+
+  useEffect(() => {
+    setEmailFilter(params.email);
+  }, [params.email]);
+
+  const debouncedEmail = useDebounce(emailFilter, 400);
+
+  useEffect(() => {
+    if (debouncedEmail === params.email) return;
+    setParams({ email: debouncedEmail, page: 1 } as Partial<ProductOwnerListParams>);
+  }, [debouncedEmail, params.email, setParams]);
 
   const queryParams = useMemo(() => buildQueryParams(params), [params]);
   const { data, isLoading, isFetching } = useGetProductOwnersQuery(queryParams);
@@ -41,8 +54,13 @@ export default function ProductOwnerListPage() {
   const handleSearch = (value: string) =>
     setParams({ name: value, page: 1 } as Partial<ProductOwnerListParams>);
 
-  const handleFilterChange = (key: string, value: string) =>
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === "email") {
+      setEmailFilter(value);
+      return;
+    }
     setParams({ [key]: value, page: 1 } as Partial<ProductOwnerListParams>);
+  };
 
   const handleSortChange = (field: string) => {
     const isAsc = params.sortBy === field && params.sortOrder === "asc";
@@ -92,7 +110,7 @@ export default function ProductOwnerListPage() {
 
         <FilterBar
           filters={filterConfigs}
-          values={{ email: params.email }}
+          values={{ email: emailFilter }}
           onChange={handleFilterChange}
         />
       </div>

@@ -4,7 +4,7 @@ import ProductListPage from "./pages/products/list/ProductListPage";
 import ProductFormPage from "./pages/products/form/ProductFormPage";
 import ProductOwnerListPage from "./pages/product-owners/list/ProductOwnerListPage";
 import ProductOwnerFormPage from "./pages/product-owners/form/ProductOwnerFormPage";
-import AboutPage from "./pages/AboutPage";
+import AboutPage from "./pages/About/AboutPage";
 
 function App() {
   return (

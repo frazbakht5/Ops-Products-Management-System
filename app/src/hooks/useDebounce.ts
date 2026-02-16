@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
  * Returns the debounced value that only updates after the delay has elapsed
  * since the last change.
  */
-export function useDebounce<T>(value: T, delay = 150): T {
+export function useDebounce<T>(value: T, delay = 300): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {

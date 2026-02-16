@@ -1,6 +1,6 @@
 import { ProductOwner } from "../product-owners/product-owner.entity";
 
-export interface ProductAttributes {
+export interface IProduct {
   id?: string;
   name: string;
   sku: string;

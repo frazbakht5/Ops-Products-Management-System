@@ -4,11 +4,11 @@ import { ProductOwner } from "../modules/product-owners/product-owner.entity";
 import { logger } from "../logger";
 
 const productOwners: Array<{ name: string; email: string; phone: string }> = [
-  { name: "Alice Johnson", email: "alice.johnson@example.com", phone: "+1-555-0101" },
-  { name: "Bob Smith", email: "bob.smith@example.com", phone: "+1-555-0102" },
-  { name: "Carol Williams", email: "carol.williams@example.com", phone: "+1-555-0103" },
-  { name: "David Brown", email: "david.brown@example.com", phone: "+1-555-0104" },
-  { name: "Eva Martinez", email: "eva.martinez@example.com", phone: "+1-555-0105" },
+  { name: "Alice Johnson", email: "alice.johnson@example.com", phone: "+44 20 7946 0101" },
+  { name: "Bob Smith", email: "bob.smith@example.com", phone: "+44 20 7946 0102" },
+  { name: "Carol Williams", email: "carol.williams@example.com", phone: "+44 20 7946 0103" },
+  { name: "David Brown", email: "david.brown@example.com", phone: "+44 20 7946 0104" },
+  { name: "Eva Martinez", email: "eva.martinez@example.com", phone: "+44 20 7946 0105" },
 ];
 
 async function seed() {

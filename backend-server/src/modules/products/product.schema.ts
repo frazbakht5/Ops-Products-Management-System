@@ -1,13 +1,19 @@
 import Joi from "joi";
+import { validateBase64Image } from "../../utils/imageValidators";
 
-const base64ImageSchema = Joi.string()
-  .base64({ paddingRequired: false })
-  .max(5 * 1024 * 1024);
+// Validate Base64-encoded images by decoding and checking bytes.
+const base64ImageSchema = Joi.string().base64({ paddingRequired: false }).custom((value, helpers) => {
+  // declared mime (may be present in the sibling field during validation)
+  const declaredMime = (helpers?.state?.ancestors?.[0] as any)?.imageMimeType;
+  const result = validateBase64Image(value, declaredMime, 5 * 1024 * 1024);
+  if (!result.ok) {
+    // Map reasons to readable messages (kept simple).
+    return helpers.error("any.invalid", { message: result.reason });
+  }
+  return value;
+});
 
-const nullableBase64ImageSchema = Joi.alternatives().try(
-  base64ImageSchema,
-  Joi.valid(null),
-);
+const nullableBase64ImageSchema = Joi.alternatives().try(base64ImageSchema, Joi.valid(null));
 
 const mimeTypeSchema = Joi.string()
   .trim()

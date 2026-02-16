@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 
-import { useDebounce } from "../../../hooks/useDebounce";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 import type { FilterBarProps, TextFilterConfig } from "./types";
 
 /** Text filter with local state + debounce so keystrokes aren't lost. */
@@ -16,24 +16,12 @@ function DebouncedTextField({
   value: string;
   onChange: (key: string, value: string) => void;
 }) {
-  const [localValue, setLocalValue] = useState(value);
-  const debouncedValue = useDebounce(localValue, 300);
-  const lastEmittedRef = useRef(value);
+  const handleChange = useCallback(
+    (next: string) => onChange(filter.key, next),
+    [onChange, filter.key],
+  );
 
-  useEffect(() => {
-    if (debouncedValue !== value) {
-      lastEmittedRef.current = debouncedValue;
-      onChange(filter.key, debouncedValue);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValue]);
-
-  useEffect(() => {
-    if (value !== lastEmittedRef.current) {
-      setLocalValue(value);
-    }
-    lastEmittedRef.current = value;
-  }, [value]);
+  const [localValue, setLocalValue] = useDebouncedValue(value, handleChange);
 
   return (
     <TextField

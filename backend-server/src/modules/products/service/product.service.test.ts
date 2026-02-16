@@ -10,10 +10,18 @@ const mockRepository = {
   delete: jest.fn(),
 };
 
+const mockOwnerService = {
+  findOneById: jest.fn(),
+};
+
 jest.mock("../../../database/data-source", () => ({
   AppDataSource: {
     getRepository: jest.fn(() => mockRepository),
   },
+}));
+
+jest.mock("../../product-owners/service/product-owner.service", () => ({
+  ProductOwnerService: jest.fn(() => mockOwnerService),
 }));
 
 describe("ProductService", () => {
@@ -22,6 +30,7 @@ describe("ProductService", () => {
   beforeEach(() => {
     service = new ProductService();
     jest.clearAllMocks();
+    mockOwnerService.findOneById.mockResolvedValue({ id: "owner-1" });
   });
 
   describe("create", () => {
@@ -31,10 +40,13 @@ describe("ProductService", () => {
       price: 99.99,
       inventory: 10,
       status: "ACTIVE" as const,
+      ownerId: "owner-1",
     };
 
     it("should create a product successfully", async () => {
-      const savedProduct = { id: "uuid-1", ...productData };
+      const owner = { id: "owner-1", name: "Owner" };
+      mockOwnerService.findOneById.mockResolvedValue(owner);
+      const savedProduct = { id: "uuid-1", ...productData, owner };
       mockRepository.findOne.mockResolvedValue(null);
       mockRepository.create.mockReturnValue(savedProduct);
       mockRepository.save.mockResolvedValue(savedProduct);
@@ -44,7 +56,15 @@ describe("ProductService", () => {
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { sku: productData.sku },
       });
-      expect(mockRepository.create).toHaveBeenCalledWith(productData);
+      expect(mockOwnerService.findOneById).toHaveBeenCalledWith("owner-1");
+      expect(mockRepository.create).toHaveBeenCalledWith({
+        name: productData.name,
+        sku: productData.sku,
+        price: productData.price,
+        inventory: productData.inventory,
+        status: productData.status,
+        owner,
+      });
       expect(mockRepository.save).toHaveBeenCalledWith(savedProduct);
       expect(result).toEqual(savedProduct);
     });

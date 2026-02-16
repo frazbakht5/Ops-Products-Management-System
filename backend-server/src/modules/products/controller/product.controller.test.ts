@@ -58,6 +58,7 @@ describe("ProductController (e2e)", () => {
       price: 99.99,
       inventory: 10,
       status: "ACTIVE",
+      ownerId: VALID_UUID,
     };
 
     it("should return 201 and created product", async () => {

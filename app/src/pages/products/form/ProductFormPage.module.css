@@ -1,0 +1,70 @@
+.containerPaper {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px;
+}
+
+@media (min-width: 1024px) {
+  .containerPaper {
+    width: 80%;
+    padding: 32px;
+  }
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .formRow {
+    flex-direction: row;
+    gap: 32px;
+  }
+}
+
+.leftColumn {
+  flex: 2 1 0%;
+  min-width: 0;
+}
+
+.gridFields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .gridFields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rightColumn {
+  flex: 1 1 0%;
+  min-width: 100%;
+  border: 1px solid var(--pf-divider, #e0e0e0);
+  border-radius: 8px;
+  min-height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--pf-bg, transparent);
+  overflow: hidden;
+}
+
+.imagePreviewImg {
+  max-width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}

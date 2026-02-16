@@ -28,6 +28,7 @@ import {
   buildOwnerSelectOptions,
   buildImagePreviewSrc,
 } from "./helper";
+import { PRODUCT_OWNERS_QUERY_LIMIT } from "./constants";
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +38,7 @@ export default function ProductFormPage() {
 
   const { data: existing, isLoading: loadingProduct } =
     useGetProductByIdQuery(id!, { skip: !isEdit });
-  const { data: ownersData } = useGetProductOwnersQuery({ limit: 100 });
+  const { data: ownersData } = useGetProductOwnersQuery({ limit: PRODUCT_OWNERS_QUERY_LIMIT });
   const [createProduct, { isLoading: isCreating }] =
     useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] =
@@ -156,14 +157,14 @@ export default function ProductFormPage() {
         {isEdit ? "Edit Product" : "Create Product"}
       </Typography>
 
-      <Paper
-        variant="outlined"
-        sx={{
-          width: { xs: "100%", lg: "80%" },
-          mx: "auto",
-          p: { xs: 3, md: 4 },
-        }}
-      >
+          <Paper
+            variant="outlined"
+            sx={{
+              width: { xs: "100%", lg: "80%" },
+              mx: "auto",
+              p: { xs: 3, md: 4 },
+            }}
+          >
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Box
             sx={{

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithTheme } from "../../test/test-utils";
-import AboutPage from "../AboutPage";
+import AboutPage from "./AboutPage";
 
 describe("AboutPage", () => {
   it("renders the heading", () => {

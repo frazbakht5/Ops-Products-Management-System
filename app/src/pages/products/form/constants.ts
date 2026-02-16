@@ -1,0 +1,1 @@
+export const PRODUCT_OWNERS_QUERY_LIMIT = 100

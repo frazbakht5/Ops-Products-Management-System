@@ -8,13 +8,13 @@ import {
   Check,
 } from "typeorm";
 import { ProductOwner } from "../product-owners/product-owner.entity";
-import { ProductAttributes } from "./product.interface";
+import { IProduct } from "./product.interface";
 
 @Check("CHK_PRODUCT_PRICE_NONNEG", "price >= 0")
 @Check("CHK_PRODUCT_INVENTORY_NONNEG", "inventory >= 0")
 @Entity()
-export class Product extends BaseEntity implements ProductAttributes {
-  constructor(defaults?: Partial<ProductAttributes>) {
+export class Product extends BaseEntity implements IProduct {
+  constructor(defaults?: Partial<IProduct>) {
     super();
     if (defaults) {
       Object.assign(this, defaults);
@@ -34,6 +34,7 @@ export class Product extends BaseEntity implements ProductAttributes {
     type: "decimal",
     precision: 12,
     scale: 2,
+    default: 0,
     transformer: {
       to: (value: number) => (value == null ? null : value.toFixed(2)),
       from: (value: string) => (value == null ? null : parseFloat(value)),
@@ -49,10 +50,7 @@ export class Product extends BaseEntity implements ProductAttributes {
     enum: ["ACTIVE", "INACTIVE"],
     default: "ACTIVE",
   })
-  status: ProductAttributes["status"];
-
-  @Column({ type: "uuid" })
-  ownerId: string;
+  status: IProduct["status"];
 
   @ManyToOne(() => ProductOwner, (owner) => owner.products, {
     onDelete: "RESTRICT",

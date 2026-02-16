@@ -6,14 +6,14 @@ import {
   OneToMany,
 } from "typeorm";
 import { Product } from "../products/product.entity";
-import { ProductOwnerAttributes } from "./product-owner.interface";
+import { IProductOwner } from "./product-owner.interface";
 
 @Entity()
 export class ProductOwner
   extends BaseEntity
-  implements ProductOwnerAttributes
+  implements IProductOwner
 {
-  constructor(defaults?: Partial<ProductOwnerAttributes>) {
+  constructor(defaults?: Partial<IProductOwner>) {
     super();
     if (defaults) {
       Object.assign(this, defaults);

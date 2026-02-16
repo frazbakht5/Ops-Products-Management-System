@@ -1,4 +1,4 @@
-export interface ProductOwnerAttributes {
+export interface IProductOwner {
   id?: string;
   name: string;
   email: string;

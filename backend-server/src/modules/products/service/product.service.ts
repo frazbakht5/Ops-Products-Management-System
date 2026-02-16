@@ -99,6 +99,20 @@ export class ProductService {
     }
   }
 
+  async findByOwnerId(ownerId: string) {
+    try {
+      await this.ownerService.findOneById(ownerId);
+      return await this.repo.find({
+        where: { owner: { id: ownerId } },
+        relations: ["owner"],
+        order: { name: "asc" },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      throw new InternalServerError("Failed to fetch products for owner");
+    }
+  }
+
   async update(id: string, data: Partial<IProduct>) {
     try {
       const product = await this.findOneById(id);

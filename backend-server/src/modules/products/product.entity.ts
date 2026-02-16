@@ -52,6 +52,12 @@ export class Product extends BaseEntity implements IProduct {
   })
   status: IProduct["status"];
 
+  @Column({ type: "text", nullable: true })
+  image?: string | null;
+
+  @Column({ type: "varchar", length: 100, nullable: true })
+  imageMimeType?: string | null;
+
   @ManyToOne(() => ProductOwner, (owner) => owner.products, {
     onDelete: "RESTRICT",
     nullable: false,

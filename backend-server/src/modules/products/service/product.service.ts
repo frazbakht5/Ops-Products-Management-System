@@ -13,13 +13,6 @@ export class ProductService {
   private repo = AppDataSource.getRepository(Product);
   private ownerService = new ProductOwnerService();
 
-  private async resolveOwner(ownerId?: string | null) {
-    if (ownerId === undefined) return undefined;
-    if (ownerId === null) return null;
-
-    return await this.ownerService.findOneById(ownerId);
-  }
-
   async create(data: IProduct) {
     try {
       const existing = await this.repo.findOne({ where: { sku: data.sku } });
@@ -110,13 +103,13 @@ export class ProductService {
     try {
       const product = await this.findOneById(id);
       const { ownerId, ...rest } = data as Partial<IProduct> & {
-        ownerId?: string | null;
+        ownerId?: string;
       };
       Object.assign(product, rest);
 
-      if (Object.prototype.hasOwnProperty.call(data, "ownerId")) {
-        const owner = await this.resolveOwner(ownerId);
-        product.owner = owner ?? null;
+      if (ownerId) {
+        const owner = await this.ownerService.findOneById(ownerId);
+        product.owner = owner;
       }
       return await this.repo.save(product);
     } catch (error) {

@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router";
-import AppLayout from "./components/layout/AppLayout";
+import AppLayout from "./components/layout/AppLayout/index";
 import ProductListPage from "./pages/products/list/ProductListPage";
 import ProductFormPage from "./pages/products/form/ProductFormPage";
 import ProductOwnerListPage from "./pages/product-owners/list/ProductOwnerListPage";

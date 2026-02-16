@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ProductOwnerService } from "../service/product-owner.service";
-import { handleError } from "../../../utils/handleError";
+import { handleError } from "../../../utils/commonFunctions";
 import {
   CreatedResponse,
   GetResponse,

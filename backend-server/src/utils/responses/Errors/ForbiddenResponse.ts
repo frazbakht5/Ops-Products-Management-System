@@ -1,7 +1,8 @@
 import { BaseResponse } from "../BaseResponse";
+import { HTTP_STATUS_CODES } from "../../constants";
 
 export class ForbiddenResponse extends BaseResponse {
   constructor(message: string = "Forbidden") {
-    super(false, 403, message);
+    super(false, HTTP_STATUS_CODES.FORBIDDEN, message);
   }
 }

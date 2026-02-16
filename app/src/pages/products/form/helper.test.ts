@@ -1,12 +1,20 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { ChangeEvent } from "react";
 import {
   INITIAL_FORM,
   buildBaseForm,
   validateForm,
   buildPayload,
   type FormState,
+  createFieldChangeHandler,
+  createImageChangeHandler,
+  createImageRemoveHandler,
+  buildOwnerSelectOptions,
+  buildImagePreviewSrc,
+  MAX_IMAGE_SIZE_BYTES,
 } from "./helper";
 import type { Product } from "../../../types/product";
+import type { ProductOwner } from "../../../types/productOwner";
 
 describe("Product form helper", () => {
   describe("buildBaseForm", () => {
@@ -208,6 +216,162 @@ describe("Product form helper", () => {
 
       expect(payload.image).toBe("YmFzZTY0");
       expect(payload.imageMimeType).toBe("image/png");
+    });
+  });
+
+  describe("helper utilities", () => {
+    it("updates overrides and clears errors via createFieldChangeHandler", () => {
+      let overrides: Partial<FormState> = {};
+      let errors: Partial<Record<keyof FormState, string>> = { name: "Required" };
+      const setFormOverrides = vi.fn((updater) => {
+        overrides =
+          typeof updater === "function" ? updater(overrides) : (updater as Partial<FormState>);
+      });
+      const setErrors = vi.fn((updater) => {
+        errors =
+          typeof updater === "function"
+            ? updater(errors)
+            : (updater as Partial<Record<keyof FormState, string>>);
+      });
+
+      const handler = createFieldChangeHandler(setFormOverrides as any, setErrors as any);
+      handler({
+        target: { name: "name", value: "Updated" },
+      } as unknown as ChangeEvent<HTMLInputElement>);
+
+      expect(overrides.name).toBe("Updated");
+      expect(errors.name).toBeUndefined();
+    });
+
+    it("builds owner select options", () => {
+      const owners: ProductOwner[] = [
+        { id: "1", name: "Alice", email: "a@test.com" },
+        { id: "2", name: "Bob", email: "b@test.com" },
+      ];
+      const options = buildOwnerSelectOptions(owners);
+      expect(options).toEqual([
+        { label: "Alice", value: "1" },
+        { label: "Bob", value: "2" },
+      ]);
+    });
+
+    it("builds image preview src", () => {
+      const preview = buildImagePreviewSrc("YmFzZTY0", "image/png");
+      expect(preview).toBe("data:image/png;base64,YmFzZTY0");
+    });
+
+    describe("image handlers", () => {
+      const originalFileReader = globalThis.FileReader;
+
+      beforeEach(() => {
+        class MockFileReader {
+          public result: string | ArrayBuffer | null = null;
+          public onloadend: (() => void) | null = null;
+          readAsDataURL() {
+            this.result = "data:image/png;base64,TESTDATA";
+            this.onloadend?.();
+          }
+        }
+        globalThis.FileReader = MockFileReader as unknown as typeof FileReader;
+      });
+
+      afterEach(() => {
+        globalThis.FileReader = originalFileReader;
+      });
+
+      it("processes selected image files", () => {
+        let overrides: Partial<FormState> = {};
+        let errors: Partial<Record<keyof FormState, string>> = {};
+        const setFormOverrides = vi.fn((updater) => {
+          overrides = typeof updater === "function" ? updater(overrides) : (updater as any);
+        });
+        const setErrors = vi.fn((updater) => {
+          errors = typeof updater === "function" ? updater(errors) : (updater as any);
+        });
+        const setImageTouched = vi.fn();
+        const setImageFileName = vi.fn();
+
+        const handler = createImageChangeHandler({
+          setFormOverrides: setFormOverrides as any,
+          setErrors: setErrors as any,
+          setImageTouched,
+          setImageFileName,
+        });
+
+        const file = new File(["hello"], "photo.png", { type: "image/png" });
+        const event = {
+          target: {
+            files: [file],
+            value: "path",
+          },
+        } as unknown as ChangeEvent<HTMLInputElement>;
+
+        handler(event);
+
+        expect(overrides.image).toBe("TESTDATA");
+        expect(overrides.imageMimeType).toBe("image/png");
+        expect(errors.image).toBeUndefined();
+        expect(setImageTouched).toHaveBeenCalledWith(true);
+        expect(setImageFileName).toHaveBeenCalledWith("photo.png");
+        expect(event.target.value).toBe("");
+      });
+
+      it("sets error when file is too large", () => {
+        let errors: Partial<Record<keyof FormState, string>> = {};
+        const setErrors = vi.fn((updater) => {
+          errors = typeof updater === "function" ? updater(errors) : (updater as any);
+        });
+        const handler = createImageChangeHandler({
+          setFormOverrides: vi.fn() as any,
+          setErrors: setErrors as any,
+          setImageTouched: vi.fn(),
+          setImageFileName: vi.fn(),
+          maxSizeBytes: 1,
+        });
+
+        const file = new File([new ArrayBuffer(MAX_IMAGE_SIZE_BYTES)], "large.png", {
+          type: "image/png",
+        });
+        const event = {
+          target: {
+            files: [file],
+            value: "path",
+          },
+        } as unknown as ChangeEvent<HTMLInputElement>;
+
+        handler(event);
+
+        expect(errors.image).toBe("Image must be smaller than 2MB");
+        expect(event.target.value).toBe("");
+      });
+    });
+
+    it("clears image state via createImageRemoveHandler", () => {
+      let overrides: Partial<FormState> = { image: "abc", imageMimeType: "image/png" };
+      let errors: Partial<Record<keyof FormState, string>> = { image: "err" };
+      const setFormOverrides = vi.fn((updater) => {
+        overrides = typeof updater === "function" ? updater(overrides) : (updater as any);
+      });
+      const setErrors = vi.fn((updater) => {
+        errors = typeof updater === "function" ? updater(errors) : (updater as any);
+      });
+      const setImageTouched = vi.fn();
+      const setImageFileName = vi.fn();
+
+      const handler = createImageRemoveHandler({
+        setFormOverrides: setFormOverrides as any,
+        setErrors: setErrors as any,
+        setImageTouched,
+        setImageFileName,
+      });
+
+      handler();
+
+      expect(overrides.image).toBeNull();
+      expect(overrides.imageMimeType).toBeNull();
+      expect(errors.image).toBeUndefined();
+      expect(setImageTouched).toHaveBeenCalledWith(true);
+      expect(setImageFileName).toHaveBeenCalledWith(undefined);
     });
   });
 });

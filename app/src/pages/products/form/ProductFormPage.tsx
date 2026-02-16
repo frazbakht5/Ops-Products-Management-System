@@ -22,9 +22,12 @@ import {
   validateForm,
   INITIAL_FORM,
   type FormState,
+  createFieldChangeHandler,
+  createImageChangeHandler,
+  createImageRemoveHandler,
+  buildOwnerSelectOptions,
+  buildImagePreviewSrc,
 } from "./helper";
-
-const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -58,13 +61,10 @@ export default function ProductFormPage() {
     [baseForm, formOverrides],
   );
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormOverrides((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
-  };
+  const handleChange = useMemo(
+    () => createFieldChangeHandler(setFormOverrides, setErrors),
+    [setFormOverrides, setErrors],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,45 +105,27 @@ export default function ProductFormPage() {
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const input = event.target;
+  const handleImageChange = useMemo(
+    () =>
+      createImageChangeHandler({
+        setFormOverrides,
+        setErrors,
+        setImageTouched,
+        setImageFileName,
+      }),
+    [setFormOverrides, setErrors, setImageTouched, setImageFileName],
+  );
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setErrors((prev) => ({
-        ...prev,
-        image: "Image must be smaller than 2MB",
-      }));
-      input.value = "";
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const base64Data = result.includes(",")
-        ? result.split(",")[1]
-        : result;
-      setFormOverrides((prev) => ({
-        ...prev,
-        image: base64Data,
-        imageMimeType: file.type || null,
-      }));
-      setErrors((prev) => ({ ...prev, image: undefined }));
-      setImageTouched(true);
-      setImageFileName(file.name);
-      input.value = "";
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveImage = () => {
-    setFormOverrides((prev) => ({ ...prev, image: null, imageMimeType: null }));
-    setImageTouched(true);
-    setImageFileName(undefined);
-    setErrors((prev) => ({ ...prev, image: undefined }));
-  };
+  const handleRemoveImage = useMemo(
+    () =>
+      createImageRemoveHandler({
+        setFormOverrides,
+        setErrors,
+        setImageTouched,
+        setImageFileName,
+      }),
+    [setFormOverrides, setErrors, setImageTouched, setImageFileName],
+  );
 
   if (isEdit && loadingProduct) {
     return (
@@ -153,14 +135,12 @@ export default function ProductFormPage() {
     );
   }
 
-  const ownerOptions = (ownersData?.items ?? []).map((o) => ({
-    label: o.name,
-    value: o.id,
-  }));
+  const ownerOptions = buildOwnerSelectOptions(ownersData?.items);
 
-  const imagePreviewSrc = formValues.image
-    ? `data:${formValues.imageMimeType ?? "image/png"};base64,${formValues.image}`
-    : undefined;
+  const imagePreviewSrc = buildImagePreviewSrc(
+    formValues.image,
+    formValues.imageMimeType,
+  );
 
   return (
     <>
@@ -176,115 +156,141 @@ export default function ProductFormPage() {
         {isEdit ? "Edit Product" : "Create Product"}
       </Typography>
 
-      <Paper variant="outlined" className="mx-auto max-w-2xl p-6">
+      <Paper
+        variant="outlined"
+        sx={{
+          width: { xs: "100%", lg: "80%" },
+          mx: "auto",
+          p: { xs: 3, md: 4 },
+        }}
+      >
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <FormField
-            name="name"
-            label="Name"
-            value={formValues.name}
-            onChange={handleChange}
-            error={errors.name}
-            required
-          />
-
-          <FormField
-            name="sku"
-            label="SKU"
-            value={formValues.sku}
-            onChange={handleChange}
-            error={errors.sku}
-            required
-          />
-
-          <FormField
-            name="price"
-            label="Price"
-            type="number"
-            value={formValues.price}
-            onChange={handleChange}
-            error={errors.price}
-            required
-          />
-
-          <FormField
-            name="inventory"
-            label="Inventory"
-            type="number"
-            value={formValues.inventory}
-            onChange={handleChange}
-            error={errors.inventory}
-          />
-
-          <FormField
-            name="status"
-            label="Status"
-            type="select"
-            value={formValues.status}
-            onChange={handleChange}
-            options={[
-              { label: "Active", value: "ACTIVE" },
-              { label: "Inactive", value: "INACTIVE" },
-            ]}
-          />
-
-          <FormField
-            name="ownerId"
-            label="Owner"
-            type="select"
-            value={formValues.ownerId}
-            onChange={handleChange}
-            options={ownerOptions}
-            error={errors.ownerId}
-            required
-          />
-
-          <Box className="mt-4">
-            <Typography variant="subtitle1" className="mb-2">
-              Product Image (optional)
-            </Typography>
-            <input
-              accept="image/*"
-              id="product-image-upload"
-              type="file"
-              hidden
-              onChange={handleImageChange}
-            />
-            <Box className="flex flex-wrap gap-2">
-              <label htmlFor="product-image-upload">
-                <Button component="span" variant="outlined">
-                  {formValues.image ? "Replace Image" : "Upload Image"}
-                </Button>
-              </label>
-              {formValues.image && (
-                <Button color="secondary" onClick={handleRemoveImage}>
-                  Remove Image
-                </Button>
-              )}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
+            <Box>
+              <FormField
+                name="name"
+                label="Name"
+                value={formValues.name}
+                onChange={handleChange}
+                error={errors.name}
+                required
+              />
             </Box>
-            {imageFileName && (
-              <Typography variant="body2" className="mt-2" color="text.secondary">
-                Selected file: {imageFileName}
-              </Typography>
-            )}
-            {!imageFileName && formValues.image && (
-              <Typography variant="body2" className="mt-2" color="text.secondary">
-                Image already attached. Upload a new file to replace or remove it.
-              </Typography>
-            )}
-            {errors.image && (
-              <Typography color="error" variant="body2" className="mt-1">
-                {errors.image}
-              </Typography>
-            )}
-            {imagePreviewSrc && (
-              <Box className="mt-4">
-                <img
-                  src={imagePreviewSrc}
-                  alt="Product"
-                  className="max-h-48 rounded border object-contain"
+            <Box>
+              <FormField
+                name="sku"
+                label="SKU"
+                value={formValues.sku}
+                onChange={handleChange}
+                error={errors.sku}
+                required
+              />
+            </Box>
+            <Box>
+              <FormField
+                name="price"
+                label="Price"
+                type="number"
+                value={formValues.price}
+                onChange={handleChange}
+                error={errors.price}
+                required
+              />
+            </Box>
+            <Box>
+              <FormField
+                name="inventory"
+                label="Inventory"
+                type="number"
+                value={formValues.inventory}
+                onChange={handleChange}
+                error={errors.inventory}
+              />
+            </Box>
+            <Box>
+              <FormField
+                name="status"
+                label="Status"
+                type="select"
+                value={formValues.status}
+                onChange={handleChange}
+                options={[
+                  { label: "Active", value: "ACTIVE" },
+                  { label: "Inactive", value: "INACTIVE" },
+                ]}
+              />
+            </Box>
+            <Box>
+              <FormField
+                name="ownerId"
+                label="Owner"
+                type="select"
+                value={formValues.ownerId}
+                onChange={handleChange}
+                options={ownerOptions}
+                error={errors.ownerId}
+                required
+              />
+            </Box>
+            <Box sx={{ gridColumn: { xs: "1 / -1" } }}>
+              <Box>
+                <Typography variant="subtitle1" className="mb-2">
+                  Product Image (optional)
+                </Typography>
+                <input
+                  accept="image/*"
+                  id="product-image-upload"
+                  type="file"
+                  hidden
+                  onChange={handleImageChange}
                 />
+                <Box className="flex flex-wrap gap-2">
+                  <label htmlFor="product-image-upload">
+                    <Button component="span" variant="outlined">
+                      {formValues.image ? "Replace Image" : "Upload Image"}
+                    </Button>
+                  </label>
+                  {formValues.image && (
+                    <Button color="secondary" onClick={handleRemoveImage}>
+                      Remove Image
+                    </Button>
+                  )}
+                </Box>
+                {imageFileName && (
+                  <Typography variant="body2" className="mt-2" color="text.secondary">
+                    Selected file: {imageFileName}
+                  </Typography>
+                )}
+                {!imageFileName && formValues.image && (
+                  <Typography variant="body2" className="mt-2" color="text.secondary">
+                    Image already attached. Upload a new file to replace or remove it.
+                  </Typography>
+                )}
+                {errors.image && (
+                  <Typography color="error" variant="body2" className="mt-1">
+                    {errors.image}
+                  </Typography>
+                )}
+                {imagePreviewSrc && (
+                  <Box className="mt-4">
+                    <img
+                      src={imagePreviewSrc}
+                      alt="Product"
+                      className="max-h-48 rounded border object-contain"
+                    />
+                  </Box>
+                )}
               </Box>
-            )}
+            </Box>
           </Box>
 
           <Box className="mt-6 flex gap-3">

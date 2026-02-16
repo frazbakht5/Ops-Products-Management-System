@@ -1,4 +1,11 @@
+import type {
+  Dispatch,
+  SetStateAction,
+  ChangeEvent,
+} from "react";
+import type { SelectOption } from "../../../components/common/FormField";
 import type { Product, CreateProductPayload } from "../../../types/product";
+import type { ProductOwner } from "../../../types/productOwner";
 
 export interface FormState {
   name: string;
@@ -21,6 +28,10 @@ export const INITIAL_FORM: FormState = {
   image: null,
   imageMimeType: null,
 };
+
+export type FormErrors = Partial<Record<keyof FormState, string>>;
+
+export const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 
 export function buildBaseForm(existing?: Product): FormState {
   if (!existing) return INITIAL_FORM;
@@ -78,3 +89,98 @@ export function buildPayload(
 
   return payload;
 }
+
+export function createFieldChangeHandler(
+  setFormOverrides: Dispatch<SetStateAction<Partial<FormState>>>,
+  setErrors: Dispatch<SetStateAction<FormErrors>>
+) {
+  return (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormOverrides((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
+}
+
+const IMAGE_TOO_LARGE_ERROR = "Image must be smaller than 2MB";
+
+function extractBase64Data(dataUrl: string): string {
+  return dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+}
+
+export function createImageChangeHandler(params: {
+  setFormOverrides: Dispatch<SetStateAction<Partial<FormState>>>;
+  setErrors: Dispatch<SetStateAction<FormErrors>>;
+  setImageTouched: Dispatch<SetStateAction<boolean>>;
+  setImageFileName: Dispatch<SetStateAction<string | undefined>>;
+  maxSizeBytes?: number;
+}) {
+  const {
+    setFormOverrides,
+    setErrors,
+    setImageTouched,
+    setImageFileName,
+    maxSizeBytes = MAX_IMAGE_SIZE_BYTES,
+  } = params;
+
+  return (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const input = event.target;
+
+    if (file.size > maxSizeBytes) {
+      setErrors((prev) => ({ ...prev, image: IMAGE_TOO_LARGE_ERROR }));
+      input.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64Data = extractBase64Data(result);
+      setFormOverrides((prev) => ({
+        ...prev,
+        image: base64Data,
+        imageMimeType: file.type || null,
+      }));
+      setErrors((prev) => ({ ...prev, image: undefined }));
+      setImageTouched(true);
+      setImageFileName(file.name);
+      input.value = "";
+    };
+    reader.readAsDataURL(file);
+  };
+}
+
+export function createImageRemoveHandler(params: {
+  setFormOverrides: Dispatch<SetStateAction<Partial<FormState>>>;
+  setErrors: Dispatch<SetStateAction<FormErrors>>;
+  setImageTouched: Dispatch<SetStateAction<boolean>>;
+  setImageFileName: Dispatch<SetStateAction<string | undefined>>;
+}) {
+  const { setFormOverrides, setErrors, setImageTouched, setImageFileName } = params;
+  return () => {
+    setFormOverrides((prev) => ({ ...prev, image: null, imageMimeType: null }));
+    setImageTouched(true);
+    setImageFileName(undefined);
+    setErrors((prev) => ({ ...prev, image: undefined }));
+  };
+}
+
+export function buildOwnerSelectOptions(
+  owners?: ProductOwner[]
+): SelectOption[] {
+  return owners?.map((owner) => ({
+    label: owner.name,
+    value: owner.id,
+  })) ?? [];
+}
+
+export function buildImagePreviewSrc(
+  image: string | null,
+  mimeType: string | null
+) {
+  if (!image) return undefined;
+  return `data:${mimeType ?? "image/png"};base64,${image}`;
+}
+
+export { extractBase64Data }; // for testing purposes

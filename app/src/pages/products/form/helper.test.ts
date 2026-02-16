@@ -24,6 +24,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         owner: { id: "o1", name: "John", email: "j@test.com" },
         image: "YmFzZTY0",
+        imageMimeType: "image/png",
       };
 
       const form = buildBaseForm(product);
@@ -35,6 +36,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: "YmFzZTY0",
+        imageMimeType: "image/png",
       });
     });
 
@@ -63,6 +65,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       expect(validateForm(form)).toEqual({});
@@ -75,6 +78,7 @@ describe("Product form helper", () => {
         price: "10",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -88,6 +92,7 @@ describe("Product form helper", () => {
         price: "10",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -103,6 +108,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -118,6 +124,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -133,6 +140,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -148,6 +156,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "",
         image: null,
+        imageMimeType: null,
       };
 
       const errors = validateForm(form);
@@ -165,6 +174,7 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: null,
+        imageMimeType: null,
       };
 
       const payload = buildPayload(form);
@@ -187,14 +197,17 @@ describe("Product form helper", () => {
         status: "ACTIVE",
         ownerId: "o1",
         image: "YmFzZTY0",
+        imageMimeType: "image/png",
       };
 
       const payload = buildPayload(form, {
         includeImage: true,
         imageValue: form.image,
+        imageMimeTypeValue: form.imageMimeType,
       });
 
       expect(payload.image).toBe("YmFzZTY0");
+      expect(payload.imageMimeType).toBe("image/png");
     });
   });
 });

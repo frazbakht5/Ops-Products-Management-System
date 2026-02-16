@@ -7,5 +7,7 @@ export interface IProduct {
   price: number;
   inventory: number;
   status: "ACTIVE" | "INACTIVE";
+  image?: string | null;
+  imageMimeType?: string | null;
   owner?: ProductOwner;
 }

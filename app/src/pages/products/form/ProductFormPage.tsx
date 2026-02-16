@@ -24,6 +24,8 @@ import {
   type FormState,
 } from "./helper";
 
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
@@ -44,6 +46,8 @@ export default function ProductFormPage() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof FormState, string>>
   >({});
+  const [imageTouched, setImageTouched] = useState(false);
+  const [imageFileName, setImageFileName] = useState<string | undefined>();
 
   const baseForm = useMemo<FormState>(
     () => buildBaseForm(existing),
@@ -68,7 +72,11 @@ export default function ProductFormPage() {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
-    const payload = buildPayload(formValues);
+    const payload = buildPayload(formValues, {
+      includeImage: imageTouched,
+      imageValue: formValues.image,
+      imageMimeTypeValue: formValues.imageMimeType,
+    });
 
     try {
       if (isEdit) {
@@ -84,6 +92,8 @@ export default function ProductFormPage() {
       }
       navigate("/products");
       setFormOverrides(INITIAL_FORM);
+      setImageTouched(false);
+      setImageFileName(undefined);
     } catch (err) {
       enqueueSnackbar(
         getErrorMessage(
@@ -93,6 +103,46 @@ export default function ProductFormPage() {
         { variant: "error" },
       );
     }
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const input = event.target;
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Image must be smaller than 2MB",
+      }));
+      input.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64Data = result.includes(",")
+        ? result.split(",")[1]
+        : result;
+      setFormOverrides((prev) => ({
+        ...prev,
+        image: base64Data,
+        imageMimeType: file.type || null,
+      }));
+      setErrors((prev) => ({ ...prev, image: undefined }));
+      setImageTouched(true);
+      setImageFileName(file.name);
+      input.value = "";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setFormOverrides((prev) => ({ ...prev, image: null, imageMimeType: null }));
+    setImageTouched(true);
+    setImageFileName(undefined);
+    setErrors((prev) => ({ ...prev, image: undefined }));
   };
 
   if (isEdit && loadingProduct) {
@@ -107,6 +157,10 @@ export default function ProductFormPage() {
     label: o.name,
     value: o.id,
   }));
+
+  const imagePreviewSrc = formValues.image
+    ? `data:${formValues.imageMimeType ?? "image/png"};base64,${formValues.image}`
+    : undefined;
 
   return (
     <>
@@ -183,6 +237,55 @@ export default function ProductFormPage() {
             error={errors.ownerId}
             required
           />
+
+          <Box className="mt-4">
+            <Typography variant="subtitle1" className="mb-2">
+              Product Image (optional)
+            </Typography>
+            <input
+              accept="image/*"
+              id="product-image-upload"
+              type="file"
+              hidden
+              onChange={handleImageChange}
+            />
+            <Box className="flex flex-wrap gap-2">
+              <label htmlFor="product-image-upload">
+                <Button component="span" variant="outlined">
+                  {formValues.image ? "Replace Image" : "Upload Image"}
+                </Button>
+              </label>
+              {formValues.image && (
+                <Button color="secondary" onClick={handleRemoveImage}>
+                  Remove Image
+                </Button>
+              )}
+            </Box>
+            {imageFileName && (
+              <Typography variant="body2" className="mt-2" color="text.secondary">
+                Selected file: {imageFileName}
+              </Typography>
+            )}
+            {!imageFileName && formValues.image && (
+              <Typography variant="body2" className="mt-2" color="text.secondary">
+                Image already attached. Upload a new file to replace or remove it.
+              </Typography>
+            )}
+            {errors.image && (
+              <Typography color="error" variant="body2" className="mt-1">
+                {errors.image}
+              </Typography>
+            )}
+            {imagePreviewSrc && (
+              <Box className="mt-4">
+                <img
+                  src={imagePreviewSrc}
+                  alt="Product"
+                  className="max-h-48 rounded border object-contain"
+                />
+              </Box>
+            )}
+          </Box>
 
           <Box className="mt-6 flex gap-3">
             <Button

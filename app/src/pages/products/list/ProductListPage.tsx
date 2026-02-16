@@ -1,10 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
+import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
+import InsertPhotoOutlinedIcon from "@mui/icons-material/InsertPhotoOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -15,7 +18,7 @@ import { getErrorMessage } from "../../../utils/getErrorMessage";
 import PageHeader from "../../../components/common/PageHeader";
 import SearchBar from "../../../components/common/SearchBar";
 import FilterBar from "../../../components/common/FilterBar";
-import DataTable from "../../../components/common/DataTable";
+import DataTable, { type Column } from "../../../components/common/DataTable";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
 import { useUrlParams } from "../../../hooks/useUrlParams";
 import {
@@ -79,25 +82,54 @@ export default function ProductListPage() {
     }
   };
 
-  const tableColumns = useMemo(
-    () =>
-      columns.map((col) =>
-        col.id === "status"
-          ? {
-              ...col,
-              render: (row: Product) => (
-                <Chip
-                  label={row.status}
-                  size="small"
-                  color={row.status === "ACTIVE" ? "success" : "default"}
-                  variant="outlined"
-                />
-              ),
-            }
-          : col,
-      ),
-    [],
-  );
+  const tableColumns = useMemo(() => {
+    const imageColumn: Column<Product> = {
+      id: "imagePreview",
+      label: "",
+      minWidth: 120,
+      sortable: false,
+      render: (row: Product) =>
+        row.image ? (
+          <Avatar
+            variant="rounded"
+            src={`data:${row.imageMimeType ?? "image/png"};base64,${row.image}`}
+            alt={row.name}
+            sx={{ width: 48, height: 48, margin: "0 auto" }}
+          />
+        ) : (
+          <Avatar
+            variant="rounded"
+            sx={{
+              width: 48,
+              height: 48,
+              margin: "0 auto",
+              bgcolor: "action.hover",
+              color: "text.disabled",
+            }}
+          >
+            <InsertPhotoOutlinedIcon fontSize="small" />
+          </Avatar>
+        ),
+    };
+
+    const enrichedColumns = columns.map((col) =>
+      col.id === "status"
+        ? {
+            ...col,
+            render: (row: Product) => (
+              <Chip
+                label={row.status}
+                size="small"
+                color={row.status === "ACTIVE" ? "success" : "default"}
+                variant="outlined"
+              />
+            ),
+          }
+        : col,
+    );
+
+    return [imageColumn, ...enrichedColumns];
+  }, []);
 
   return (
     <>

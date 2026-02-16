@@ -67,6 +67,22 @@ export const productApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Product", id: "LIST" }],
     }),
+
+    getProductsByOwner: builder.query<Product[], string>({
+      query: (ownerId) => `/products/owner/${ownerId}`,
+      transformResponse: (response: BaseApiResponse<Product[]>) => response.data ?? [],
+      providesTags: (result, _error, ownerId) => {
+        const ownerTag = { type: "Product" as const, id: `OWNER-${ownerId}` };
+        if (!result) {
+          return [ownerTag, { type: "Product", id: "LIST" }];
+        }
+        return [
+          ...result.map(({ id }) => ({ type: "Product" as const, id })),
+          ownerTag,
+          { type: "Product", id: "LIST" },
+        ];
+      },
+    }),
   }),
 });
 
@@ -76,4 +92,5 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useGetProductsByOwnerQuery,
 } = productApi;

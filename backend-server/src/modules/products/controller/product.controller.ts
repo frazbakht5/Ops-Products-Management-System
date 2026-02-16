@@ -48,6 +48,16 @@ export class ProductController {
     }
   }
 
+  async getByOwner(req: Request, res: Response) {
+    try {
+      const products = await service.findByOwnerId(req.params.ownerId as string);
+      const response = new GetResponse(products);
+      return res.status(response.statusCode).json(response);
+    } catch (err: any) {
+      return handleError(res, err, "Failed to fetch products for owner");
+    }
+  }
+
   async update(req: Request, res: Response) {
     try {
       const product = await service.update(req.params.id as string, req.body);

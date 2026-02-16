@@ -56,3 +56,7 @@ export const productQuerySchema = Joi.object({
   sortBy: Joi.string().valid("name", "sku", "price", "inventory", "status").default("name"),
   sortOrder: Joi.string().valid("asc", "desc").default("asc"),
 });
+
+export const productOwnerParamSchema = Joi.object({
+  ownerId: Joi.string().uuid({ version: "uuidv4" }).required(),
+});

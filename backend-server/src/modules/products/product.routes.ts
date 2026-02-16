@@ -6,6 +6,7 @@ import {
   createProductSchema,
   updateProductSchema,
   productQuerySchema,
+  productOwnerParamSchema,
 } from "./product.schema";
 
 const router = Router();
@@ -141,6 +142,47 @@ router.post("/", validate(createProductSchema), controller.create);
  *                           type: integer
  */
 router.get("/", validate(productQuerySchema, "query"), controller.getAll);
+
+/**
+ * @swagger
+ * /products/owner/{ownerId}:
+ *   get:
+ *     summary: List products for a specific owner
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: ownerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Product owner identifier
+ *     responses:
+ *       200:
+ *         description: List of products for the owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Product owner not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/owner/:ownerId",
+  validate(productOwnerParamSchema, "params"),
+  controller.getByOwner
+);
 
 /**
  * @swagger

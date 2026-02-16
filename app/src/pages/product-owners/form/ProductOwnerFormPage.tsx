@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link as RouterLink, useNavigate, useParams } from "react-router";
+import { skipToken } from "@reduxjs/toolkit/query";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemButton from "@mui/material/ListItemButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSnackbar } from "notistack";
 
@@ -15,6 +20,7 @@ import {
   useCreateProductOwnerMutation,
   useUpdateProductOwnerMutation,
 } from "../../../store/api/productOwnerApi";
+import { useGetProductsByOwnerQuery } from "../../../store/api/productApi";
 import {
   buildBaseForm,
   buildPayload,
@@ -37,6 +43,23 @@ export default function ProductOwnerFormPage() {
     useUpdateProductOwnerMutation();
 
   const isSaving = isCreating || isUpdating;
+
+  const {
+    data: ownerProducts = [],
+    isFetching: ownerProductsLoading,
+    error: ownerProductsError,
+  } = useGetProductsByOwnerQuery(isEdit ? (id as string) : skipToken);
+
+  const ownerProductsErrorMessage = useMemo(
+    () =>
+      ownerProductsError
+        ? getErrorMessage(
+            ownerProductsError,
+            "Failed to load owner's products",
+          )
+        : null,
+    [ownerProductsError],
+  );
 
   const [formOverrides, setFormOverrides] = useState<Partial<FormState>>({});
   const [errors, setErrors] = useState<
@@ -117,51 +140,132 @@ export default function ProductOwnerFormPage() {
         {isEdit ? "Edit Product Owner" : "Create Product Owner"}
       </Typography>
 
-      <Paper variant="outlined" className="mx-auto max-w-2xl p-6">
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <FormField
-            name="name"
-            label="Name"
-            value={formValues.name}
-            onChange={handleChange}
-            error={errors.name}
-            required
-          />
+      <Paper
+        variant="outlined"
+        sx={{
+          mx: "auto",
+          width: "100%",
+          maxWidth: 1200,
+          p: { xs: 3, md: 4 },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", lg: "row" },
+            gap: 4,
+            alignItems: "stretch",
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <FormField
+                name="name"
+                label="Name"
+                value={formValues.name}
+                onChange={handleChange}
+                error={errors.name}
+                required
+              />
 
-          <FormField
-            name="email"
-            label="Email"
-            type="email"
-            value={formValues.email}
-            onChange={handleChange}
-            error={errors.email}
-            required
-          />
+              <FormField
+                name="email"
+                label="Email"
+                type="email"
+                value={formValues.email}
+                onChange={handleChange}
+                error={errors.email}
+                required
+              />
 
-          <FormField
-            name="phone"
-            label="Phone"
-            type="tel"
-            value={formValues.phone}
-            onChange={handleChange}
-            placeholder="Optional"
-          />
+              <FormField
+                name="phone"
+                label="Phone"
+                type="tel"
+                value={formValues.phone}
+                onChange={handleChange}
+                placeholder="Optional"
+              />
 
-          <Box className="mt-6 flex gap-3">
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isSaving}
-              startIcon={isSaving ? <CircularProgress size={18} /> : undefined}
-            >
-              {isEdit ? "Update" : "Create"}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => navigate("/product-owners")}
-            >
-              Cancel
-            </Button>
+              <Box className="mt-6 flex gap-3">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isSaving}
+                  startIcon={isSaving ? <CircularProgress size={18} /> : undefined}
+                >
+                  {isEdit ? "Update" : "Create"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate("/product-owners")}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              flex: 1,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              p: 3,
+              minHeight: 240,
+              backgroundColor: "background.default",
+            }}
+          >
+            <Typography variant="h6" className="mb-3">
+              Products owned by this user
+            </Typography>
+            {!isEdit && (
+              <Typography variant="body2" color="text.secondary">
+                Save the owner first to see their products.
+              </Typography>
+            )}
+            {isEdit && ownerProductsLoading && (
+              <Box className="flex items-center gap-2">
+                <CircularProgress size={18} />
+                <Typography variant="body2" color="text.secondary">
+                  Loading...
+                </Typography>
+              </Box>
+            )}
+            {isEdit && ownerProductsErrorMessage && (
+              <Typography color="error" variant="body2">
+                {ownerProductsErrorMessage}
+              </Typography>
+            )}
+            {isEdit &&
+              !ownerProductsLoading &&
+              !ownerProductsErrorMessage &&
+              ownerProducts.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  No products are currently assigned to this owner.
+                </Typography>
+              )}
+            {isEdit &&
+              !ownerProductsLoading &&
+              !ownerProductsErrorMessage &&
+              ownerProducts.length > 0 && (
+                <List dense>
+                  {ownerProducts.map((product) => (
+                    <ListItem key={product.id} disablePadding>
+                      <ListItemButton
+                        component={RouterLink}
+                        to={`/products/${product.id}`}
+                      >
+                        <ListItemText
+                          primary={product.name}
+                          secondary={`SKU: ${product.sku}`}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
           </Box>
         </Box>
       </Paper>

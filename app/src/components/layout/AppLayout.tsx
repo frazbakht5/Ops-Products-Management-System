@@ -173,6 +173,44 @@ export default function AppLayout() {
             </IconButton>
           )}
 
+          <Box
+            component="span"
+            aria-hidden
+            sx={{
+              width: 48,
+              height: 28,
+              mr: 2,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg
+              width="44"
+              height="18"
+              viewBox="0 0 44 18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id="appLogoGradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                  <stop offset="0%" stopColor="#93c5fd" />
+                  <stop offset="100%" stopColor="#2563eb" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M4 9c0-2.761 2.239-5 5-5 2.094 0 3.743 1.033 5.192 3.12.26.373.622.576.978.575.357 0 .72-.205.98-.58C17.61 5.03 19.26 4 21.356 4c2.761 0 5 2.239 5 5s-2.239 5-5 5c-2.092 0-3.743-1.034-5.197-3.126-.26-.372-.622-.574-.977-.574-.355 0-.717.202-.978.574C12.75 15.97 11.1 17 9.004 17 6.239 17 4 14.761 4 12z"
+                fill="url(#appLogoGradient)"
+                fillRule="evenodd"
+              />
+              <path
+                d="M38.004 17c-2.094 0-3.744-1.033-5.197-3.126-.26-.372-.622-.574-.977-.574-.355 0-.717.202-.978.574C29.4 15.968 27.75 17 25.656 17c-2.765 0-5.004-2.239-5.004-5s2.239-5 5.004-5c2.094 0 3.744 1.033 5.197 3.12.26.373.622.576.977.575.355 0 .717-.205.978-.58C33.6 5.03 35.25 4 37.344 4 40.108 4 42.347 6.239 42.347 9s-2.239 5-5.004 5z"
+                fill="url(#appLogoGradient)"
+                fillOpacity="0.9"
+                fillRule="evenodd"
+              />
+            </svg>
+          </Box>
+
           <Typography
             variant="h6"
             noWrap

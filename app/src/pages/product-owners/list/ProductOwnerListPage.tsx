@@ -35,7 +35,7 @@ export default function ProductOwnerListPage() {
   const [deleteTarget, setDeleteTarget] = useState<ProductOwner | null>(null);
   const [deleteOwner, { isLoading: isDeleting }] =
     useDeleteProductOwnerMutation();
-  const [emailFilter, setEmailFilter] = useState(params.email);
+  const [emailFilter, setEmailFilter] = useState<string>(params.email);
 
   useEffect(() => {
     setEmailFilter(params.email);

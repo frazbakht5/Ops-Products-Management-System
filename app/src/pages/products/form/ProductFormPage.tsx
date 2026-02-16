@@ -212,6 +212,7 @@ export default function ProductFormPage() {
                     value={formValues.price}
                     onChange={handleChange}
                     error={errors.price}
+                    inputProps={{ min: 0 }}
                     required
                   />
                 </Box>
@@ -223,6 +224,7 @@ export default function ProductFormPage() {
                     value={formValues.inventory}
                     onChange={handleChange}
                     error={errors.inventory}
+                    inputProps={{ min: 0 }}
                   />
                 </Box>
                 <Box>

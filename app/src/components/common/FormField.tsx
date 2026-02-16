@@ -1,4 +1,4 @@
-import TextField from "@mui/material/TextField";
+import TextField, { type TextFieldProps } from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ export interface TextFormFieldProps extends BaseFormFieldProps {
   placeholder?: string;
   multiline?: boolean;
   rows?: number;
+  inputProps?: TextFieldProps["inputProps"];
 }
 
 export interface SelectFormFieldProps extends BaseFormFieldProps {
@@ -101,6 +102,7 @@ export default function FormField(props: FormFieldProps) {
       placeholder={props.placeholder}
       multiline={props.multiline}
       rows={props.rows}
+      inputProps={props.inputProps}
       size="medium"
       margin="normal"
     />

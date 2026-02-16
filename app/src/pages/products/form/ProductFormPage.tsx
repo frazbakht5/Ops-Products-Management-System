@@ -157,34 +157,11 @@ export default function ProductFormPage() {
         {isEdit ? "Edit Product" : "Create Product"}
       </Typography>
 
-          <Paper
-            variant="outlined"
-            sx={{
-              width: { xs: "100%", lg: "80%" },
-              mx: "auto",
-              p: { xs: 3, md: 4 },
-            }}
-          >
+          <Paper variant="outlined" className="w-full lg:w-4/5 mx-auto p-6 md:p-8">
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", lg: "row" },
-              alignItems: "stretch",
-              gap: 4,
-            }}
-          >
-            <Box sx={{ flex: 2, minWidth: 0 }}>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    md: "repeat(2, minmax(0, 1fr))",
-                  },
-                  gap: 3,
-                }}
-              >
+          <Box className="flex flex-col lg:flex-row items-stretch gap-4">
+            <Box className="flex-[2_1_0%] min-w-0">
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Box>
                   <FormField
                     name="name"
@@ -297,26 +274,19 @@ export default function ProductFormPage() {
             </Box>
 
             <Box
+              className="flex-1 min-w-full lg:min-w-0 border rounded-lg min-h-[220px] flex justify-center items-center overflow-hidden"
               sx={{
-                flex: 1,
-                minWidth: { xs: "100%", lg: 0 },
-                border: "1px solid",
+                backgroundColor: "background.default",
                 borderColor: "divider",
                 borderRadius: 2,
                 minHeight: 220,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "background.default",
-                overflow: "hidden",
               }}
             >
               {imagePreviewSrc ? (
                 <img
                   src={imagePreviewSrc}
                   alt="Product"
-                  className="object-contain"
-                  style={{ maxWidth: "100%", height: "auto", maxHeight: 280 }}
+                  className="object-contain max-w-full h-auto max-h-[280px]"
                 />
               ) : (
                 <Typography variant="body2" color="text.secondary" textAlign="center">

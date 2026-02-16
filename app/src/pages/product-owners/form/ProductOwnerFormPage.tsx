@@ -140,24 +140,9 @@ export default function ProductOwnerFormPage() {
         {isEdit ? "Edit Product Owner" : "Create Product Owner"}
       </Typography>
 
-      <Paper
-        variant="outlined"
-        sx={{
-          mx: "auto",
-          width: "100%",
-          maxWidth: 1200,
-          p: { xs: 3, md: 4 },
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", lg: "row" },
-            gap: 4,
-            alignItems: "stretch",
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
+      <Paper variant="outlined" className="mx-auto w-full max-w-[1200px] p-3 md:p-4">
+        <Box className="flex flex-col lg:flex-row gap-4 items-stretch">
+          <Box className="flex-1">
             <Box component="form" onSubmit={handleSubmit} noValidate>
               <FormField
                 name="name"
@@ -207,14 +192,12 @@ export default function ProductOwnerFormPage() {
           </Box>
 
           <Box
+            className="flex-1 border rounded-lg p-3 min-h-[240px]"
             sx={{
-              flex: 1,
-              border: "1px solid",
+              backgroundColor: "background.default",
               borderColor: "divider",
               borderRadius: 2,
-              p: 3,
               minHeight: 240,
-              backgroundColor: "background.default",
             }}
           >
             <Typography variant="h6" className="mb-3">

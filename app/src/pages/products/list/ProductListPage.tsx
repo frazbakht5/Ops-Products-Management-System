@@ -93,18 +93,12 @@ export default function ProductListPage() {
             variant="rounded"
             src={`data:${row.imageMimeType ?? "image/png"};base64,${row.image}`}
             alt={row.name}
-            sx={{ width: 48, height: 48, margin: "0 auto" }}
+            className="w-12 h-12 mx-auto"
           />
         ) : (
           <Avatar
             variant="rounded"
-            sx={{
-              width: 48,
-              height: 48,
-              margin: "0 auto",
-              bgcolor: "action.hover",
-              color: "text.disabled",
-            }}
+            className="w-12 h-12 mx-auto bg-gray-100 text-gray-400"
           >
             <InsertPhotoOutlinedIcon fontSize="small" />
           </Avatar>
@@ -166,7 +160,7 @@ export default function ProductListPage() {
               page: 1,
             } as Partial<ProductListParams>)
           }
-          sx={{ minWidth: 140 }}
+          className="min-w-[140px]"
         >
           {SORT_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>

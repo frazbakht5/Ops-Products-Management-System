@@ -167,82 +167,92 @@ export default function ProductFormPage() {
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "repeat(2, minmax(0, 1fr))",
-              },
-              gap: 3,
+              display: "flex",
+              flexDirection: { xs: "column", lg: "row" },
+              alignItems: "stretch",
+              gap: 4,
             }}
           >
-            <Box>
-              <FormField
-                name="name"
-                label="Name"
-                value={formValues.name}
-                onChange={handleChange}
-                error={errors.name}
-                required
-              />
-            </Box>
-            <Box>
-              <FormField
-                name="sku"
-                label="SKU"
-                value={formValues.sku}
-                onChange={handleChange}
-                error={errors.sku}
-                required
-              />
-            </Box>
-            <Box>
-              <FormField
-                name="price"
-                label="Price"
-                type="number"
-                value={formValues.price}
-                onChange={handleChange}
-                error={errors.price}
-                required
-              />
-            </Box>
-            <Box>
-              <FormField
-                name="inventory"
-                label="Inventory"
-                type="number"
-                value={formValues.inventory}
-                onChange={handleChange}
-                error={errors.inventory}
-              />
-            </Box>
-            <Box>
-              <FormField
-                name="status"
-                label="Status"
-                type="select"
-                value={formValues.status}
-                onChange={handleChange}
-                options={[
-                  { label: "Active", value: "ACTIVE" },
-                  { label: "Inactive", value: "INACTIVE" },
-                ]}
-              />
-            </Box>
-            <Box>
-              <FormField
-                name="ownerId"
-                label="Owner"
-                type="select"
-                value={formValues.ownerId}
-                onChange={handleChange}
-                options={ownerOptions}
-                error={errors.ownerId}
-                required
-              />
-            </Box>
-            <Box sx={{ gridColumn: { xs: "1 / -1" } }}>
-              <Box>
+            <Box sx={{ flex: 2, minWidth: 0 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: "repeat(2, minmax(0, 1fr))",
+                  },
+                  gap: 3,
+                }}
+              >
+                <Box>
+                  <FormField
+                    name="name"
+                    label="Name"
+                    value={formValues.name}
+                    onChange={handleChange}
+                    error={errors.name}
+                    required
+                  />
+                </Box>
+                <Box>
+                  <FormField
+                    name="sku"
+                    label="SKU"
+                    value={formValues.sku}
+                    onChange={handleChange}
+                    error={errors.sku}
+                    required
+                  />
+                </Box>
+                <Box>
+                  <FormField
+                    name="price"
+                    label="Price"
+                    type="number"
+                    value={formValues.price}
+                    onChange={handleChange}
+                    error={errors.price}
+                    required
+                  />
+                </Box>
+                <Box>
+                  <FormField
+                    name="inventory"
+                    label="Inventory"
+                    type="number"
+                    value={formValues.inventory}
+                    onChange={handleChange}
+                    error={errors.inventory}
+                  />
+                </Box>
+                <Box>
+                  <FormField
+                    name="status"
+                    label="Status"
+                    type="select"
+                    value={formValues.status}
+                    onChange={handleChange}
+                    options={[
+                      { label: "Active", value: "ACTIVE" },
+                      { label: "Inactive", value: "INACTIVE" },
+                    ]}
+                  />
+                </Box>
+                <Box>
+                  <FormField
+                    name="ownerId"
+                    label="Owner"
+                    type="select"
+                    value={formValues.ownerId}
+                    onChange={handleChange}
+                    options={ownerOptions}
+                    error={errors.ownerId}
+                    required
+                  />
+                </Box>
+              </Box>
+
+              <Box sx={{ mt: 4 }}>
                 <Typography variant="subtitle1" className="mb-2">
                   Product Image (optional)
                 </Typography>
@@ -280,16 +290,36 @@ export default function ProductFormPage() {
                     {errors.image}
                   </Typography>
                 )}
-                {imagePreviewSrc && (
-                  <Box className="mt-4">
-                    <img
-                      src={imagePreviewSrc}
-                      alt="Product"
-                      className="max-h-48 rounded border object-contain"
-                    />
-                  </Box>
-                )}
               </Box>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: { xs: "100%", lg: 0 },
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+                minHeight: 220,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "background.default",
+                overflow: "hidden",
+              }}
+            >
+              {imagePreviewSrc ? (
+                <img
+                  src={imagePreviewSrc}
+                  alt="Product"
+                  className="object-contain"
+                  style={{ maxWidth: "100%", height: "auto", maxHeight: 280 }}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary" textAlign="center">
+                  Product image preview will appear here.
+                </Typography>
+              )}
             </Box>
           </Box>
 

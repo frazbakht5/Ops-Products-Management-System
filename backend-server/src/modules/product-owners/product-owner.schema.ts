@@ -15,4 +15,8 @@ export const updateProductOwnerSchema = Joi.object({
 export const productOwnerQuerySchema = Joi.object({
   name: Joi.string().trim().max(255),
   email: Joi.string().trim().max(255),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+  sortBy: Joi.string().valid("name", "email", "phone").default("name"),
+  sortOrder: Joi.string().valid("asc", "desc").default("asc"),
 });

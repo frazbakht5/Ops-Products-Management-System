@@ -124,27 +124,34 @@ describe("ProductController (e2e)", () => {
   });
 
   describe("GET /products", () => {
-    it("should return 200 and list of products", async () => {
+    it("should return 200 and paginated products", async () => {
       const products = [
         { id: "1", name: "A", sku: "SKU-A" },
         { id: "2", name: "B", sku: "SKU-B" },
       ];
-      mockFindAll.mockResolvedValue(products);
+      mockFindAll.mockResolvedValue({ items: products, total: 2 });
 
       const res = await request(app).get("/products");
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toEqual(products);
+      expect(res.body.data).toEqual({ items: products, total: 2 });
     });
 
-    it("should pass query filters to service", async () => {
-      mockFindAll.mockResolvedValue([]);
+    it("should pass query filters and pagination to service", async () => {
+      mockFindAll.mockResolvedValue({ items: [], total: 0 });
 
-      await request(app).get("/products?name=test&status=ACTIVE");
+      await request(app).get("/products?name=test&status=ACTIVE&page=2&limit=5&sortBy=price&sortOrder=desc");
 
       expect(mockFindAll).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "test", status: "ACTIVE" })
+        expect.objectContaining({
+          name: "test",
+          status: "ACTIVE",
+          page: 2,
+          limit: 5,
+          sortBy: "price",
+          sortOrder: "desc",
+        })
       );
     });
 

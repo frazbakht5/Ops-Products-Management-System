@@ -4,7 +4,7 @@ import { NotFoundError, ConflictError } from "../../../utils/errors";
 const mockRepository = {
   create: jest.fn(),
   save: jest.fn(),
-  find: jest.fn(),
+  findAndCount: jest.fn(),
   findOne: jest.fn(),
   delete: jest.fn(),
 };
@@ -66,39 +66,56 @@ describe("ProductOwnerService", () => {
   });
 
   describe("findAll", () => {
-    it("should return all product owners with no filters", async () => {
+    it("should return paginated product owners with no filters", async () => {
       const owners = [{ id: "1", name: "A" }, { id: "2", name: "B" }];
-      mockRepository.find.mockResolvedValue(owners);
+      mockRepository.findAndCount.mockResolvedValue([owners, 2]);
 
       const result = await service.findAll({});
 
-      expect(mockRepository.find).toHaveBeenCalledWith({
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
         where: {},
         relations: ["products"],
+        skip: 0,
+        take: 10,
+        order: { name: "asc" },
       });
-      expect(result).toEqual(owners);
+      expect(result).toEqual({ items: owners, total: 2 });
     });
 
     it("should apply name filter with ILike", async () => {
-      mockRepository.find.mockResolvedValue([]);
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ name: "john" });
 
-      const callArgs = mockRepository.find.mock.calls[0][0];
+      const callArgs = mockRepository.findAndCount.mock.calls[0][0];
       expect(callArgs.where.name).toBeDefined();
     });
 
     it("should apply email filter", async () => {
-      mockRepository.find.mockResolvedValue([]);
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ email: "john@example.com" });
 
-      const callArgs = mockRepository.find.mock.calls[0][0];
+      const callArgs = mockRepository.findAndCount.mock.calls[0][0];
       expect(callArgs.where.email).toBe("john@example.com");
     });
 
+    it("should apply pagination and sorting params", async () => {
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 3, limit: 20, sortBy: "email", sortOrder: "desc" });
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
+        relations: ["products"],
+        skip: 40,
+        take: 20,
+        order: { email: "desc" },
+      });
+    });
+
     it("should throw InternalServerError on failure", async () => {
-      mockRepository.find.mockRejectedValue(new Error("DB error"));
+      mockRepository.findAndCount.mockRejectedValue(new Error("DB error"));
 
       await expect(service.findAll({})).rejects.toThrow(
         "Failed to fetch product owners"

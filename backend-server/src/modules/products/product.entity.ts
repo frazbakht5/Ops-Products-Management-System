@@ -54,6 +54,7 @@ export class Product extends BaseEntity implements IProduct {
 
   @ManyToOne(() => ProductOwner, (owner) => owner.products, {
     onDelete: "RESTRICT",
+    nullable: false,
   })
   @JoinColumn({ name: "ownerId" })
   owner: ProductOwner;

@@ -2,6 +2,7 @@ import { ILike } from "typeorm";
 import { AppDataSource } from "../../../database/data-source";
 import { Product } from "../product.entity";
 import { IProduct } from "../product.interface";
+import { ProductOwnerService } from "../../product-owners/service/product-owner.service";
 import {
   NotFoundError,
   ConflictError,
@@ -10,22 +11,45 @@ import {
 
 export class ProductService {
   private repo = AppDataSource.getRepository(Product);
+  private ownerService = new ProductOwnerService();
+
+  private async resolveOwner(ownerId?: string | null) {
+    if (ownerId === undefined) return undefined;
+    if (ownerId === null) return null;
+
+    return await this.ownerService.findOneById(ownerId);
+  }
 
   async create(data: IProduct) {
     try {
       const existing = await this.repo.findOne({ where: { sku: data.sku } });
       if (existing) {
-        throw new ConflictError(`Product with SKU '${data.sku}' already exists`);
+        throw new ConflictError(
+          `Product with SKU '${data.sku}' already exists`,
+        );
       }
-      const product = this.repo.create(data);
+      const { ownerId, ...rest } = data as IProduct & { ownerId: string };
+      const owner = await this.ownerService.findOneById(ownerId);
+      const product = this.repo.create({ ...rest, owner });
       return await this.repo.save(product);
     } catch (error) {
-      if (error instanceof ConflictError) throw error;
+      if (error instanceof ConflictError || error instanceof NotFoundError) {
+        throw error;
+      }
       throw new InternalServerError("Failed to create product");
     }
   }
 
-  async findAll(filters: Partial<IProduct>) {
+  async findAll(filters: {
+    name?: string;
+    sku?: string;
+    ownerName?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }) {
     try {
       const whereConditions: any = {};
 
@@ -37,18 +61,30 @@ export class ProductService {
         whereConditions.sku = filters.sku;
       }
 
+      if (filters.ownerName) {
+        whereConditions.owner = {
+          name: ILike(`%${filters.ownerName}%`),
+        };
+      }
+
       if (filters.status) {
         whereConditions.status = filters.status;
       }
 
-      if (filters.owner) {
-        whereConditions.owner = { id: filters.owner.id };
-      }
+      const page = filters.page || 1;
+      const limit = filters.limit || 10;
+      const sortBy = filters.sortBy || "name";
+      const sortOrder = filters.sortOrder || "asc";
 
-      return await this.repo.find({
+      const [items, total] = await this.repo.findAndCount({
         where: whereConditions,
         relations: ["owner"],
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { [sortBy]: sortOrder },
       });
+
+      return { items, total };
     } catch (error) {
       throw new InternalServerError("Failed to fetch products");
     }
@@ -73,7 +109,15 @@ export class ProductService {
   async update(id: string, data: Partial<IProduct>) {
     try {
       const product = await this.findOneById(id);
-      Object.assign(product, data);
+      const { ownerId, ...rest } = data as Partial<IProduct> & {
+        ownerId?: string | null;
+      };
+      Object.assign(product, rest);
+
+      if (Object.prototype.hasOwnProperty.call(data, "ownerId")) {
+        const owner = await this.resolveOwner(ownerId);
+        product.owner = owner ?? null;
+      }
       return await this.repo.save(product);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;

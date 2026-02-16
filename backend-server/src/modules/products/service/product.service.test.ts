@@ -5,7 +5,7 @@ import { NotFoundError, ConflictError } from "../../../utils/errors";
 const mockRepository = {
   create: jest.fn(),
   save: jest.fn(),
-  find: jest.fn(),
+  findAndCount: jest.fn(),
   findOne: jest.fn(),
   delete: jest.fn(),
 };
@@ -69,48 +69,65 @@ describe("ProductService", () => {
   });
 
   describe("findAll", () => {
-    it("should return all products with no filters", async () => {
+    it("should return paginated products with no filters", async () => {
       const products = [{ id: "1", name: "A" }, { id: "2", name: "B" }];
-      mockRepository.find.mockResolvedValue(products);
+      mockRepository.findAndCount.mockResolvedValue([products, 2]);
 
       const result = await service.findAll({});
 
-      expect(mockRepository.find).toHaveBeenCalledWith({
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
         where: {},
         relations: ["owner"],
+        skip: 0,
+        take: 10,
+        order: { name: "asc" },
       });
-      expect(result).toEqual(products);
+      expect(result).toEqual({ items: products, total: 2 });
     });
 
     it("should apply name filter with ILike", async () => {
-      mockRepository.find.mockResolvedValue([]);
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ name: "test" });
 
-      const callArgs = mockRepository.find.mock.calls[0][0];
+      const callArgs = mockRepository.findAndCount.mock.calls[0][0];
       expect(callArgs.where.name).toBeDefined();
     });
 
     it("should apply sku filter", async () => {
-      mockRepository.find.mockResolvedValue([]);
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ sku: "SKU-001" });
 
-      const callArgs = mockRepository.find.mock.calls[0][0];
+      const callArgs = mockRepository.findAndCount.mock.calls[0][0];
       expect(callArgs.where.sku).toBe("SKU-001");
     });
 
     it("should apply status filter", async () => {
-      mockRepository.find.mockResolvedValue([]);
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ status: "ACTIVE" });
 
-      const callArgs = mockRepository.find.mock.calls[0][0];
+      const callArgs = mockRepository.findAndCount.mock.calls[0][0];
       expect(callArgs.where.status).toBe("ACTIVE");
     });
 
+    it("should apply pagination and sorting params", async () => {
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 2, limit: 5, sortBy: "price", sortOrder: "desc" });
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
+        relations: ["owner"],
+        skip: 5,
+        take: 5,
+        order: { price: "desc" },
+      });
+    });
+
     it("should throw InternalServerError on failure", async () => {
-      mockRepository.find.mockRejectedValue(new Error("DB error"));
+      mockRepository.findAndCount.mockRejectedValue(new Error("DB error"));
 
       await expect(service.findAll({})).rejects.toThrow(
         "Failed to fetch products"

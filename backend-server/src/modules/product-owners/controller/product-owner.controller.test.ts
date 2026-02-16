@@ -115,27 +115,34 @@ describe("ProductOwnerController (e2e)", () => {
   });
 
   describe("GET /product-owners", () => {
-    it("should return 200 and list of owners", async () => {
+    it("should return 200 and paginated owners", async () => {
       const owners = [
         { id: "1", name: "John", email: "john@test.com" },
         { id: "2", name: "Jane", email: "jane@test.com" },
       ];
-      mockFindAll.mockResolvedValue(owners);
+      mockFindAll.mockResolvedValue({ items: owners, total: 2 });
 
       const res = await request(app).get("/product-owners");
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toEqual(owners);
+      expect(res.body.data).toEqual({ items: owners, total: 2 });
     });
 
-    it("should pass query filters to service", async () => {
-      mockFindAll.mockResolvedValue([]);
+    it("should pass query filters and pagination to service", async () => {
+      mockFindAll.mockResolvedValue({ items: [], total: 0 });
 
-      await request(app).get("/product-owners?name=john&email=john@test.com");
+      await request(app).get("/product-owners?name=john&email=john@test.com&page=2&limit=5&sortBy=email&sortOrder=desc");
 
       expect(mockFindAll).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "john", email: "john@test.com" })
+        expect.objectContaining({
+          name: "john",
+          email: "john@test.com",
+          page: 2,
+          limit: 5,
+          sortBy: "email",
+          sortOrder: "desc",
+        })
       );
     });
 

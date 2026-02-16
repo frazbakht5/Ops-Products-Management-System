@@ -23,8 +23,15 @@ export class ProductOwnerController {
 
   async getAll(req: Request, res: Response) {
     try {
-      const owners = await service.findAll(req.query as any);
-      const response = new GetResponse(owners);
+      const { page, limit, sortBy, sortOrder, ...filters } = req.query as any;
+      const result = await service.findAll({
+        ...filters,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+        sortBy,
+        sortOrder,
+      });
+      const response = new GetResponse(result);
       return res.status(response.statusCode).json(response);
     } catch (err: any) {
       return handleError(res, err, "Failed to fetch product owners");

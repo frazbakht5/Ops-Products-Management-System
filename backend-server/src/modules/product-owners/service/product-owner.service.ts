@@ -25,7 +25,14 @@ export class ProductOwnerService {
     }
   }
 
-  async findAll(filters: { name?: string; email?: string }) {
+  async findAll(filters: {
+    name?: string;
+    email?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }) {
     try {
       const whereConditions: any = {};
 
@@ -37,10 +44,20 @@ export class ProductOwnerService {
         whereConditions.email = filters.email;
       }
 
-      return await this.repo.find({
+      const page = filters.page || 1;
+      const limit = filters.limit || 10;
+      const sortBy = filters.sortBy || "name";
+      const sortOrder = filters.sortOrder || "asc";
+
+      const [items, total] = await this.repo.findAndCount({
         where: whereConditions,
         relations: ["products"],
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { [sortBy]: sortOrder },
       });
+
+      return { items, total };
     } catch (error) {
       throw new InternalServerError("Failed to fetch product owners");
     }

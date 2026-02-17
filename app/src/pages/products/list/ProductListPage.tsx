@@ -12,6 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useSnackbar } from "notistack";
+import { LOW_INVENTORY_COUNT } from "./constants";
 
 import { getErrorMessage } from "../../../utils/getErrorMessage";
 import PageHeader from "../../../components/common/PageHeader";
@@ -117,6 +118,20 @@ export default function ProductListPage() {
                 variant="outlined"
               />
             ),
+          }
+        : col.id === "inventory"
+        ? {
+            ...col,
+            render: (row: Product) =>
+              row.inventory < LOW_INVENTORY_COUNT ? (
+                <Tooltip title="Low stock">
+                  <span className="inline-flex animate-pulse">
+                    <Chip label={row.inventory} size="small" color="error" />
+                  </span>
+                </Tooltip>
+              ) : (
+                row.inventory
+              ),
           }
         : col,
     );

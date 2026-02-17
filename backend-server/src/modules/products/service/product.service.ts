@@ -1,4 +1,4 @@
-import { ILike } from "typeorm";
+import { ILike, FindOperator } from "typeorm";
 import { AppDataSource } from "../../../database/data-source";
 import { Product } from "../product.entity";
 import { IProduct } from "../product.interface";
@@ -8,6 +8,8 @@ import {
   ConflictError,
   InternalServerError,
 } from "../../../utils/errors";
+import { ProductFilters } from "../product.types";
+import { logger } from "../../../logger";
 
 export class ProductService {
   private repo = AppDataSource.getRepository(Product);
@@ -25,7 +27,8 @@ export class ProductService {
       const owner = await this.ownerService.findOneById(ownerId);
       const product = this.repo.create({ ...rest, owner });
       return await this.repo.save(product);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.create: " + error.message);
       if (error instanceof ConflictError || error instanceof NotFoundError) {
         throw error;
       }
@@ -33,36 +36,31 @@ export class ProductService {
     }
   }
 
-  async findAll(filters: {
-    name?: string;
-    sku?: string;
-    ownerName?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-  }) {
+  private getWhereConditionsByFilters(filters: ProductFilters) {
+    const whereConditions: any = {};
+
+    if (filters.name) {
+      whereConditions.name = ILike(`%${filters.name}%`);
+    }
+
+    if (filters.sku) {
+      whereConditions.sku = filters.sku;
+    }
+
+    if (filters.ownerName) {
+      whereConditions.owner = {
+        name: ILike(`%${filters.ownerName}%`),
+      };
+    }
+
+    if (filters.status) {
+      whereConditions.status = filters.status;
+    }
+    return whereConditions;
+  }
+  async findAll(filters: ProductFilters) {
     try {
-      const whereConditions: any = {};
-
-      if (filters.name) {
-        whereConditions.name = ILike(`%${filters.name}%`);
-      }
-
-      if (filters.sku) {
-        whereConditions.sku = filters.sku;
-      }
-
-      if (filters.ownerName) {
-        whereConditions.owner = {
-          name: ILike(`%${filters.ownerName}%`),
-        };
-      }
-
-      if (filters.status) {
-        whereConditions.status = filters.status;
-      }
+      const whereConditions: any = this.getWhereConditionsByFilters(filters);
 
       const page = filters.page || 1;
       const limit = filters.limit || 10;
@@ -78,7 +76,8 @@ export class ProductService {
       });
 
       return { items, total };
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.findAll: " + error.message);
       throw new InternalServerError("Failed to fetch products");
     }
   }
@@ -93,7 +92,8 @@ export class ProductService {
         throw new NotFoundError(`Product with id '${id}' not found`);
       }
       return product;
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.findOneById: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to fetch product");
     }
@@ -107,7 +107,8 @@ export class ProductService {
         relations: ["owner"],
         order: { name: "asc" },
       });
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.findByOwnerId: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to fetch products for owner");
     }
@@ -126,7 +127,8 @@ export class ProductService {
         product.owner = owner;
       }
       return await this.repo.save(product);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.update: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to update product");
     }
@@ -136,7 +138,8 @@ export class ProductService {
     try {
       await this.findOneById(id);
       await this.repo.delete(id);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductService.delete: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to delete product");
     }

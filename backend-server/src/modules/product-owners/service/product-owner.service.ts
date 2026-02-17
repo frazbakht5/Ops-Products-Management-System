@@ -7,42 +7,46 @@ import {
   InternalServerError,
 } from "../../../utils/errors";
 import { IProductOwner } from "../product-owner.interface";
+import { logger } from "../../../logger";
+import { ProductOwnerFilters } from "../product-owner.types";
 
 export class ProductOwnerService {
   private repo = AppDataSource.getRepository(ProductOwner);
 
   async create(data: IProductOwner) {
     try {
-      const existing = await this.repo.findOne({ where: { email: data.email } });
+      const existing = await this.repo.findOne({
+        where: { email: data.email },
+      });
       if (existing) {
-        throw new ConflictError(`Product owner with email '${data.email}' already exists`);
+        throw new ConflictError(
+          `Product owner with email '${data.email}' already exists`,
+        );
       }
       const owner = this.repo.create(data);
       return await this.repo.save(owner);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductOwnerService.create: " + error.message);
       if (error instanceof ConflictError) throw error;
       throw new InternalServerError("Failed to create product owner");
     }
   }
 
-  async findAll(filters: {
-    name?: string;
-    email?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-  }) {
+  private getWhereConditionsByFilters(filters: ProductOwnerFilters) {
+    const whereConditions: any = {};
+
+    if (filters.name) {
+      whereConditions.name = ILike(`%${filters.name}%`);
+    }
+
+    if (filters.email) {
+      whereConditions.email = filters.email;
+    }
+    return whereConditions;
+  }
+  async findAll(filters: ProductOwnerFilters) {
     try {
-      const whereConditions: any = {};
-
-      if (filters.name) {
-        whereConditions.name = ILike(`%${filters.name}%`);
-      }
-
-      if (filters.email) {
-        whereConditions.email = filters.email;
-      }
+      const whereConditions: any = this.getWhereConditionsByFilters(filters);
 
       const page = filters.page || 1;
       const limit = filters.limit || 10;
@@ -58,7 +62,8 @@ export class ProductOwnerService {
       });
 
       return { items, total };
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductOwnerService.findAll: " + error.message);
       throw new InternalServerError("Failed to fetch product owners");
     }
   }
@@ -73,7 +78,8 @@ export class ProductOwnerService {
         throw new NotFoundError(`Product owner with id '${id}' not found`);
       }
       return owner;
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductOwnerService.findOneById: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to fetch product owner");
     }
@@ -84,7 +90,8 @@ export class ProductOwnerService {
       const owner = await this.findOneById(id);
       Object.assign(owner, data);
       return await this.repo.save(owner);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductOwnerService.update: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to update product owner");
     }
@@ -94,7 +101,8 @@ export class ProductOwnerService {
     try {
       await this.findOneById(id);
       await this.repo.delete(id);
-    } catch (error) {
+    } catch (error: any) {
+      logger.info("Error in ProductOwnerService.delete: " + error.message);
       if (error instanceof NotFoundError) throw error;
       throw new InternalServerError("Failed to delete product owner");
     }

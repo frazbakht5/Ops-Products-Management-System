@@ -9,6 +9,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { alpha, useTheme } from "@mui/material/styles";
+import { Link as RouterLink } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import DarkModeIcon from "@mui/icons-material/DarkModeOutlined";
@@ -85,6 +86,8 @@ export default function TopBar({ isDesktop, onMenuClick }: TopBarProps) {
         </Box>
 
         <Typography
+          component={RouterLink}
+          to="/products"
           variant="h6"
           noWrap
           sx={{
@@ -93,6 +96,7 @@ export default function TopBar({ isDesktop, onMenuClick }: TopBarProps) {
             background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            textDecoration: "none",
             flex: 1,
           }}
         >

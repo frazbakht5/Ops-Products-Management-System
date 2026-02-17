@@ -25,6 +25,7 @@ import {
   useGetProductsQuery,
   useDeleteProductMutation,
 } from "../../../store/api/productApi";
+import { useGetProductOwnersQuery } from "../../../store/api/productOwnerApi";
 import type { Product } from "../../../types/product";
 import {
   DEFAULTS,
@@ -46,6 +47,9 @@ export default function ProductListPage() {
 
   const queryParams = useMemo(() => buildQueryParams(params), [params]);
   const { data, isLoading, isFetching } = useGetProductsQuery(queryParams);
+
+  const { data: ownersData } = useGetProductOwnersQuery();
+  const ownerOptions = ownersData?.items?.map((o) => ({ label: o.name, value: o.name })) ?? [];
 
   const handleSearch = (value: string) =>
     setParams({ name: value, page: 1 } as Partial<ProductListParams>);
@@ -155,7 +159,13 @@ export default function ProductListPage() {
         />
 
         <FilterBar
-          filters={filterConfigs}
+          filters={
+            filterConfigs.map((f) =>
+              f.key === "ownerName" && f.type === "autocomplete"
+                ? { ...f, options: ownerOptions }
+                : f,
+            )
+          }
           values={{
             sku: params.sku,
             ownerName: params.ownerName,

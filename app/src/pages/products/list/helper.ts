@@ -33,7 +33,8 @@ export const filterConfigs: FilterConfig[] = [
   {
     key: "ownerName",
     label: "Owner",
-    type: "text",
+    type: "autocomplete",
+    options: [],
     placeholder: "Filter by owner...",
   },
   {
@@ -82,12 +83,7 @@ export function buildQueryParams(params: ProductListParams) {
       : {}),
     page: params.page,
     limit: params.limit,
-    sortBy: params.sortBy as
-      | "name"
-      | "sku"
-      | "price"
-      | "inventory"
-      | "status",
+    sortBy: params.sortBy as "name" | "sku" | "price" | "inventory" | "status",
     sortOrder: params.sortOrder as "asc" | "desc",
   };
 }

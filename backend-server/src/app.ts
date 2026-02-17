@@ -4,6 +4,8 @@ import 'reflect-metadata';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { registerRoutes } from './modules/route.index';
+import { logger } from './logger';
+import { requestLogger } from './utils/commonFunctions';
 
 const app = express();
 
@@ -24,6 +26,9 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Request logging: method, path, status and duration (and body for non-GET)
+app.use(requestLogger);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

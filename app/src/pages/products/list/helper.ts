@@ -54,10 +54,9 @@ export const columns: Column<Product>[] = [
     id: "price",
     label: "Price",
     minWidth: 100,
-    align: "right",
     render: (row) => `$${row.price.toFixed(2)}`,
   },
-  { id: "inventory", label: "Inventory", minWidth: 100, align: "right" },
+  { id: "inventory", label: "Inventory", minWidth: 100 },
   {
     id: "status",
     label: "Status",

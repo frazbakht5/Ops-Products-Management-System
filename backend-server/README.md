@@ -18,7 +18,7 @@ This package contains the Express + TypeORM backend that powers the Ops Products
 	```bash
 	npm run dev
 	```
-6. **Open Swagger docs** at [http://localhost:5000/api-docs](http://localhost:5000/api-docs) to explore and test every endpoint.
+6. **Open Swagger docs** at [http://localhost:4000/api-docs](http://localhost:4000/api-docs) to explore and test every endpoint.
 
 ## Available Scripts
 
@@ -61,7 +61,7 @@ backend-server/
 
 ## API Documentation
 
-- **Swagger UI:** [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+- **Swagger UI:** [http://localhost:4000/api-docs](http://localhost:4000/api-docs)
 
 These docs stay in sync via `swagger-jsdoc`, pulling descriptions from route annotations.
 

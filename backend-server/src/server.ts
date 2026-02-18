@@ -3,7 +3,7 @@ import { AppDataSource } from "./database/data-source";
 import { config } from "./config/config";
 import { logger } from "./logger";
 
-const PORT = config.port || 5000;
+const PORT = config.port || 4000;
 
 AppDataSource.initialize()
   .then(() => {

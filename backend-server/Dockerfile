@@ -23,6 +23,6 @@ RUN npm ci --only=production
 # Copy built artifacts
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 5000
+EXPOSE 4000
 
 CMD ["npm", "run", "start"]

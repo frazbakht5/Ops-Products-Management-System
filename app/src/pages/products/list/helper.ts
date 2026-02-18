@@ -33,7 +33,8 @@ export const filterConfigs: FilterConfig[] = [
   {
     key: "ownerName",
     label: "Owner",
-    type: "text",
+    type: "autocomplete",
+    options: [],
     placeholder: "Filter by owner...",
   },
   {
@@ -54,10 +55,9 @@ export const columns: Column<Product>[] = [
     id: "price",
     label: "Price",
     minWidth: 100,
-    align: "right",
     render: (row) => `$${row.price.toFixed(2)}`,
   },
-  { id: "inventory", label: "Inventory", minWidth: 100, align: "right" },
+  { id: "inventory", label: "Inventory", minWidth: 100 },
   {
     id: "status",
     label: "Status",
@@ -83,12 +83,7 @@ export function buildQueryParams(params: ProductListParams) {
       : {}),
     page: params.page,
     limit: params.limit,
-    sortBy: params.sortBy as
-      | "name"
-      | "sku"
-      | "price"
-      | "inventory"
-      | "status",
+    sortBy: params.sortBy as "name" | "sku" | "price" | "inventory" | "status",
     sortOrder: params.sortOrder as "asc" | "desc",
   };
 }

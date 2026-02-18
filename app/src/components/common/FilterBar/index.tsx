@@ -1,45 +1,40 @@
-import { useCallback } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 
-import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
-import type { FilterBarProps, TextFilterConfig } from "./types";
+import DebouncedTextField from "./DebouncedTextField";
+import AutocompleteFilter from "./AutocompleteFilter";
+import type {
+  FilterBarProps,
+  FilterConfig,
+  TextFilterConfig,
+  SelectFilterConfig,
+  AutocompleteFilterConfig,
+} from "./types";
 
 /** Text filter with local state + debounce so keystrokes aren't lost. */
-function DebouncedTextField({
-  filter,
-  value,
+export default function FilterBar({
+  filters,
+  values,
   onChange,
-}: {
-  filter: TextFilterConfig;
-  value: string;
-  onChange: (key: string, value: string) => void;
-}) {
-  const handleChange = useCallback(
-    (next: string) => onChange(filter.key, next),
-    [onChange, filter.key],
-  );
-
-  const [localValue, setLocalValue] = useDebouncedValue(value, handleChange);
-
-  return (
-    <TextField
-      size="small"
-      label={filter.label}
-      placeholder={filter.placeholder}
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      sx={{ minWidth: 200 }}
-    />
-  );
-}
-
-export default function FilterBar({ filters, values, onChange }: FilterBarProps) {
+}: FilterBarProps) {
   return (
     <Box className="flex flex-wrap items-center gap-3">
-      {filters.map((filter) => {
+      {filters.map((filter: FilterConfig) => {
+        if (filter.type === "autocomplete") {
+          const f = filter as AutocompleteFilterConfig;
+          return (
+            <AutocompleteFilter
+              key={f.key}
+              filter={f}
+              value={values[f.key] ?? ""}
+              onChange={onChange}
+            />
+          );
+        }
+
         if (filter.type === "select") {
+          const f = filter as SelectFilterConfig;
           return (
             <TextField
               key={filter.key}
@@ -53,7 +48,7 @@ export default function FilterBar({ filters, values, onChange }: FilterBarProps)
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
-              {filter.options.map((opt) => (
+              {f.options.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </MenuItem>
@@ -62,11 +57,12 @@ export default function FilterBar({ filters, values, onChange }: FilterBarProps)
           );
         }
 
+        const f = filter as TextFilterConfig;
         return (
           <DebouncedTextField
-            key={filter.key}
-            filter={filter}
-            value={values[filter.key] ?? ""}
+            key={f.key}
+            filter={f}
+            value={values[f.key] ?? ""}
             onChange={onChange}
           />
         );
@@ -76,6 +72,7 @@ export default function FilterBar({ filters, values, onChange }: FilterBarProps)
 }
 
 export type {
+  AutocompleteFilterConfig,
   FilterBarProps,
   FilterConfig,
   FilterOption,

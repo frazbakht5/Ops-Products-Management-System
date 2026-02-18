@@ -12,6 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useSnackbar } from "notistack";
+import { LOW_INVENTORY_COUNT } from "./constants";
 
 import { getErrorMessage } from "../../../utils/getErrorMessage";
 import PageHeader from "../../../components/common/PageHeader";
@@ -24,6 +25,7 @@ import {
   useGetProductsQuery,
   useDeleteProductMutation,
 } from "../../../store/api/productApi";
+import { useGetProductOwnersQuery } from "../../../store/api/productOwnerApi";
 import type { Product } from "../../../types/product";
 import {
   DEFAULTS,
@@ -45,6 +47,9 @@ export default function ProductListPage() {
 
   const queryParams = useMemo(() => buildQueryParams(params), [params]);
   const { data, isLoading, isFetching } = useGetProductsQuery(queryParams);
+
+  const { data: ownersData } = useGetProductOwnersQuery();
+  const ownerOptions = ownersData?.items?.map((o) => ({ label: o.name, value: o.name })) ?? [];
 
   const handleSearch = (value: string) =>
     setParams({ name: value, page: 1 } as Partial<ProductListParams>);
@@ -118,6 +123,20 @@ export default function ProductListPage() {
               />
             ),
           }
+        : col.id === "inventory"
+        ? {
+            ...col,
+            render: (row: Product) =>
+              row.inventory < LOW_INVENTORY_COUNT ? (
+                <Tooltip title="Low stock">
+                  <span className="inline-flex animate-pulse">
+                    <Chip label={row.inventory} size="small" color="error" />
+                  </span>
+                </Tooltip>
+              ) : (
+                row.inventory
+              ),
+          }
         : col,
     );
 
@@ -140,7 +159,13 @@ export default function ProductListPage() {
         />
 
         <FilterBar
-          filters={filterConfigs}
+          filters={
+            filterConfigs.map((f) =>
+              f.key === "ownerName" && f.type === "autocomplete"
+                ? { ...f, options: ownerOptions }
+                : f,
+            )
+          }
           values={{
             sku: params.sku,
             ownerName: params.ownerName,

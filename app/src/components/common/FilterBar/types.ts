@@ -20,7 +20,13 @@ export interface SelectFilterConfig extends BaseFilterConfig {
   options: FilterOption[];
 }
 
-export type FilterConfig = TextFilterConfig | SelectFilterConfig;
+export interface AutocompleteFilterConfig extends BaseFilterConfig {
+  type: "autocomplete";
+  options: FilterOption[];
+  placeholder?: string;
+}
+
+export type FilterConfig = TextFilterConfig | SelectFilterConfig | AutocompleteFilterConfig;
 
 export interface FilterBarProps {
   filters: FilterConfig[];

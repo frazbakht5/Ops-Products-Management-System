@@ -1,15 +1,15 @@
-import { Response } from "express";
 import { HttpError } from "./errors";
 import {
   BadRequestResponse,
   NotFoundResponse,
   InternalServerResponse,
 } from "./responses";
-
+import { logger } from "../logger";
+import { Request, Response, NextFunction } from "express";
 export function handleError(
   res: Response,
   err: unknown,
-  fallbackMessage: string
+  fallbackMessage: string,
 ) {
   if (err instanceof HttpError) {
     const statusCode = err.statusCode;
@@ -28,4 +28,25 @@ export function handleError(
   }
   const response = new InternalServerResponse(fallbackMessage);
   return res.status(response.statusCode).json(response);
+}
+
+export function requestLogger(req: Request, res: Response, next: NextFunction) {
+  const start = Date.now();
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+
+    logger.info(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        durationMs: duration,
+        ip: req.ip,
+      }),
+    );
+  });
+
+  next();
 }

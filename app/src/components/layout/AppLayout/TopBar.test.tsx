@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { renderWithTheme } from "../../../test/test-utils";
 import { ThemeContext } from "../../../context/themeContextValue";
 import TopBar from "./TopBar";
@@ -13,9 +14,11 @@ function renderTopBar(
   return {
     toggleMode,
     ...renderWithTheme(
-      <ThemeContext.Provider value={{ mode, toggleMode }}>
-        <TopBar {...props} />
-      </ThemeContext.Provider>,
+      <MemoryRouter>
+        <ThemeContext.Provider value={{ mode, toggleMode }}>
+          <TopBar {...props} />
+        </ThemeContext.Provider>
+      </MemoryRouter>,
     ),
   };
 }
